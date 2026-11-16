@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1"
+    />
+    <meta
+      name="referrer"
+      content="no-referrer"
+    />
+    <title>Super Productivity · 原生应用关联演示</title>
+    <link
+      rel="icon"
+      href="data:,"
+    />
+    <link
+      rel="stylesheet"
+      href="/native/style.css"
+    />
+  </head>
+  <body>
+    <header>
+      <div>
+        <strong>Super Productivity <span>× ChatGPT</span></strong
+        ><small>左侧为完整原生 Web 应用，右侧为会话模拟</small>
+      </div>
+      <nav>
+        <button id="wide">只看原应用</button
+        ><button id="native-features">原生功能设置</button
+        ><button id="install">启用本机关联插件</button
+        ><a
+          href="/native/plugin.zip"
+          download
+          >下载插件</a
+        ><button
+          id="seed"
+          disabled
+        >
+          添加示例任务</button
+        ><button id="help">使用说明</button>
+      </nav>
+    </header>
+    <div class="workspace">
+      <section class="native">
+        <iframe
+          id="application"
+          title="完整 Super Productivity 原生应用"
+          allow="clipboard-read; clipboard-write"
+        ></iframe>
+      </section>
+      <aside
+        class="companion"
+        aria-label="ChatGPT 会话演示"
+      >
+        <div class="companion-head">
+          <strong>ChatGPT</strong><span class="badge">会话模拟</span>
+        </div>
+        <div
+          class="connection"
+          id="connection"
+          role="status"
+        >
+          等待原生应用插件连接
+        </div>
+        <div
+          class="content"
+          id="content"
+        ></div>
+      </aside>
+    </div>
+    <div
+      id="toast"
+      class="toast"
+      role="status"
+      hidden
+    ></div>
+    <dialog id="modal">
+      <h2>保留原应用的关联演示</h2>
+      <ol>
+        <li>
+          左侧是直接从 fork 源码构建的 Super
+          Productivity，可以照常使用任务、日程、计划、专注、统计和设置。
+        </li>
+        <li>
+          原版新安装默认关闭部分功能。点击“原生功能设置”可开启日程、看板、习惯和专注模式，修改会自动保存。
+        </li>
+        <li>
+          首次使用点击“启用本机关联插件”，在左侧原生安装确认框中确认；也可以下载
+          ZIP，在设置 → 插件中手动安装。
+        </li>
+        <li>
+          连接后点击“添加示例任务”，创建真实的原生项目、主任务和子任务，或直接使用你在本站点新建的任务。
+        </li>
+        <li>
+          从会话侧关联或创建子任务；点击“在原应用中查看”定位原生任务。原生任务的链接附件可打开对应会话。
+        </li>
+        <li>
+          ChatGPT 一侧仍为本地模拟，没有连接真实 ChatGPT
+          账号或语言模型。此站点的原生任务保存在浏览器 IndexedDB，与旧原型的数据分开。
+        </li>
+      </ol>
+      <form method="dialog"><button>知道了</button></form>
+    </dialog>
+    <script src="/native/host.js"></script>
+  </body>
+</html>

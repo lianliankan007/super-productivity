@@ -5,6 +5,10 @@
   "description": "任务与 ChatGPT 项目关联的独立双边交互原型",
   "scripts": {
     "quiet": "node ../../../tools/quiet.js",
+    "start:native": "node native/serve.cjs",
+    "test:native": "playwright test --config=native/playwright.config.cjs",
+    "format:native": "prettier --write native/**/*.{js,cjs,json,html,css,md}",
+    "format:native:check": "prettier --check native/**/*.{js,cjs,json,html,css,md}",
     "start": "node serve.cjs",
     "test": "playwright test --config=playwright.config.cjs",
     "format": "prettier --write index.html *.cjs *.md package.json",

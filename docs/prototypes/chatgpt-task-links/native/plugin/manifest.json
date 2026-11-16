@@ -1,0 +1,22 @@
+{
+  "id": "chatgpt-task-links-native-demo",
+  "name": "ChatGPT 任务关联演示",
+  "version": "0.2.0",
+  "manifestVersion": 1,
+  "minSupVersion": "20.0.0",
+  "description": "在完整 Super Productivity 中关联本机会话演示，创建原生子任务并双向跳转。ChatGPT 一侧为模拟。",
+  "author": "lianliankan007",
+  "hooks": ["dataChanged"],
+  "permissions": [
+    "getTasks",
+    "getAllProjects",
+    "getSelectedTask",
+    "getFocusedTask",
+    "addTask",
+    "addProject",
+    "updateTask",
+    "dispatchAction",
+    "showSnack"
+  ],
+  "dataSharing": []
+}

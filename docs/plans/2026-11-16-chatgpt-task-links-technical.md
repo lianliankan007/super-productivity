@@ -1,11 +1,13 @@
 # ChatGPT 项目与任务关联：技术方案与实施计划
 
-- 状态：Proposed（配套独立交互原型，未修改主应用或接入真实账号）
+- 状态：部分演示已实现（原生插件闭环；本机 MCP 与真实 ChatGPT 接入仍为 Proposed）
 - 负责人：lianliankan007
 - 跟踪：[设计分支](https://github.com/lianliankan007/super-productivity/tree/design/chatgpt-project-task-links-20261116)
 - 最近核对：2026-11-16，上游 `2b3f78edbf0721f0842daa097e47247fe245852f`
 - 完成条件：本文阶段 A—D 验收通过后，将 API 契约与使用限制迁入维护文档，移除本计划。
 - 需求与验收：[产品方案](2026-11-16-chatgpt-task-links-product.md)
+
+当前已实现[完整原生应用版 Demo](../prototypes/chatgpt-task-links/native/README.md)：不修改主应用源码，以原生插件 API 完成任务、子任务、LINK 附件、状态读写与跳转。外层模拟会话通过同源消息请求插件，独立会话窗口通过原窗口转发。本机操作记录不等于下文设计的持久化幂等账本；此演示不代表阶段 A—D 的生产验收或真实 MCP 接入已完成。
 
 ## 1. 架构选择
 
@@ -32,30 +34,30 @@ flowchart TB
 
 ### 方案比较
 
-| 路线 | 结论 | 原因 |
-| --- | --- | --- |
-| 仅贴链接附件 | 阶段 A 直接可用的最小流程 | 能导航，不能在 ChatGPT 完成子任务写入闭环 |
-| 仅接现有内置 MCP | 不足以完成本需求 | 当前只读和 Inbox capture 能力不能替代子任务、关联与状态写入 |
-| 扩展内置 MCP 的全部写权限 | 后续再评估 | 会改变已有助手凭据的授权契约；首版不扩大旧 scope |
-| SP 插件存一大段同步 JSON | 不采用 | 每次更新整块关系会增加并发覆盖，桥接还需要另一套访问该存储的通道 |
-| 给 Task 新增 ChatGPT 专用字段 | 不采用为首版 | 已有附件足以存 URL；新持久化字段会增加旧客户端和协议维护成本 |
-| 抓取 ChatGPT 页面或调用内部接口 | 不采用 | 不属于已验证的公开扩展契约，也不需要保存登录 Cookie |
+| 路线                            | 结论                      | 原因                                                             |
+| ------------------------------- | ------------------------- | ---------------------------------------------------------------- |
+| 仅贴链接附件                    | 阶段 A 直接可用的最小流程 | 能导航，不能在 ChatGPT 完成子任务写入闭环                        |
+| 仅接现有内置 MCP                | 不足以完成本需求          | 当前只读和 Inbox capture 能力不能替代子任务、关联与状态写入      |
+| 扩展内置 MCP 的全部写权限       | 后续再评估                | 会改变已有助手凭据的授权契约；首版不扩大旧 scope                 |
+| SP 插件存一大段同步 JSON        | 不采用                    | 每次更新整块关系会增加并发覆盖，桥接还需要另一套访问该存储的通道 |
+| 给 Task 新增 ChatGPT 专用字段   | 不采用为首版              | 已有附件足以存 URL；新持久化字段会增加旧客户端和协议维护成本     |
+| 抓取 ChatGPT 页面或调用内部接口 | 不采用                    | 不属于已验证的公开扩展契约，也不需要保存登录 Cookie              |
 
 ## 2. 源码依据与改造入口
 
-| 代码 | 已验证事实 / 计划用途 |
-| --- | --- |
-| [`task.model.ts`](../../src/app/features/tasks/task.model.ts) | 原生任务已有 `parentId`、`subTaskIds`、`attachments` |
-| [`task-attachment.model.ts`](../../src/app/features/tasks/task-attachment/task-attachment.model.ts) | LINK 可用 `id/type/path/title/icon` 表达 |
-| [`task-attachment.service.ts`](../../src/app/features/tasks/task-attachment/task-attachment.service.ts) | 添加附件会重新生成 nanoid；不能直接用它保留方案中的确定性 ID |
-| [`task.reducer.ts`](../../src/app/features/tasks/store/task.reducer.ts) | 已有附件添加、修改、删除处理；不新增持久化 action 字符串 |
-| [`task.service.ts`](../../src/app/features/tasks/task.service.ts) | `createNewTaskWithDefaults` 可显式指定 `id`；不得为了新需求继续扩大已超长服务 |
-| [`local-rest-api-task-routes.service.ts`](../../src/app/features/tasks/local-rest-api-task-routes.service.ts) | `POST /tasks` 支持 `parentId`；允许字段里没有 `attachments`，不能假设 PATCH 能写附件 |
-| [`local-rest-api-feature-bridge.service.ts`](../../src/app/features/tasks/local-rest-api-feature-bridge.service.ts) | 字面标题子任务创建已走 `addSubTask`；为新命令构造含附件的完整 Task 提供参考 |
-| [`local-rest-api-feature-routes.ts`](../../src/app/core/electron/local-rest-api-feature-routes.ts) | 功能侧注册路由，避免 core 依赖 feature |
-| [`electron/mcp/mcp-tools.ts`](../../electron/mcp/mcp-tools.ts) | 内置 MCP scope、投影和响应大小限制；保持现有授权不变 |
-| [`parse-app-uri-task-action.ts`](../../src/app/features/tasks/util/parse-app-uri-task-action.ts) | 现有 URI action 不是按 ID 打开任务的完整导航协议；不编造任务跳转 URL |
-| [`plugin-api/src/types.ts`](../../packages/plugin-api/src/types.ts) | 后续可用菜单、侧栏、选中任务和持久化能力；首版不改变 public Plugin API |
+| 代码                                                                                                                | 已验证事实 / 计划用途                                                                |
+| ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| [`task.model.ts`](../../src/app/features/tasks/task.model.ts)                                                       | 原生任务已有 `parentId`、`subTaskIds`、`attachments`                                 |
+| [`task-attachment.model.ts`](../../src/app/features/tasks/task-attachment/task-attachment.model.ts)                 | LINK 可用 `id/type/path/title/icon` 表达                                             |
+| [`task-attachment.service.ts`](../../src/app/features/tasks/task-attachment/task-attachment.service.ts)             | 添加附件会重新生成 nanoid；不能直接用它保留方案中的确定性 ID                         |
+| [`task.reducer.ts`](../../src/app/features/tasks/store/task.reducer.ts)                                             | 已有附件添加、修改、删除处理；不新增持久化 action 字符串                             |
+| [`task.service.ts`](../../src/app/features/tasks/task.service.ts)                                                   | `createNewTaskWithDefaults` 可显式指定 `id`；不得为了新需求继续扩大已超长服务        |
+| [`local-rest-api-task-routes.service.ts`](../../src/app/features/tasks/local-rest-api-task-routes.service.ts)       | `POST /tasks` 支持 `parentId`；允许字段里没有 `attachments`，不能假设 PATCH 能写附件 |
+| [`local-rest-api-feature-bridge.service.ts`](../../src/app/features/tasks/local-rest-api-feature-bridge.service.ts) | 字面标题子任务创建已走 `addSubTask`；为新命令构造含附件的完整 Task 提供参考          |
+| [`local-rest-api-feature-routes.ts`](../../src/app/core/electron/local-rest-api-feature-routes.ts)                  | 功能侧注册路由，避免 core 依赖 feature                                               |
+| [`electron/mcp/mcp-tools.ts`](../../electron/mcp/mcp-tools.ts)                                                      | 内置 MCP scope、投影和响应大小限制；保持现有授权不变                                 |
+| [`parse-app-uri-task-action.ts`](../../src/app/features/tasks/util/parse-app-uri-task-action.ts)                    | 现有 URI action 不是按 ID 打开任务的完整导航协议；不编造任务跳转 URL                 |
+| [`plugin-api/src/types.ts`](../../packages/plugin-api/src/types.ts)                                                 | 后续可用菜单、侧栏、选中任务和持久化能力；首版不改变 public Plugin API               |
 
 实现前继续遵守[同步贡献契约](../sync-and-op-log/contributor-sync-model.md)：一个必须原子重放的状态变化对应一个 operation；remote/replay 不再次触发外部写入。
 
@@ -94,26 +96,26 @@ flowchart TB
 
 以下地址均为**待实现**，复用原有本机监听与 Bearer token；token 不返回给 ChatGPT，也不提交到仓库。不把 `attachments` 加进通用 PATCH 白名单。
 
-| 方法与路径 | 输入 | 输出和语义 |
-| --- | --- | --- |
-| `GET /integrations/chatgpt/tasks/:taskId/links` | 已授权的确切任务 ID | 直接与继承关联、父任务信息、`revision` |
-| `PUT /integrations/chatgpt/tasks/:taskId/links` | `kind`、`url`、`title?`、`mode: ensure / append / replace`、`expectedRevision` | 仅更新目标关联，返回附件 ID 和实际 revision；ensure 相同 URL 无操作 |
-| `DELETE /integrations/chatgpt/tasks/:taskId/links/:linkId` | `expectedRevision` | 只删目标受管附件；重复删除返回 `alreadyAbsent` |
-| `PUT /integrations/chatgpt/subtasks/:commandId` | `parentTaskId`、`title`、`conversationUrl?`、`notes?`、`estimateMinutes?`、`dueDay?` | 用固定命令 ID 创建含会话链接的完整子任务；返回 taskId 与保存结果 |
-| `PUT /integrations/chatgpt/tasks/:taskId/completion` | `isDone`、`expectedIsDone` | 在 renderer 同一执行段核对当前状态并修改，避免桥接先读后调通用 PATCH 的本机竞态；相同目标状态返回无操作 |
+| 方法与路径                                                 | 输入                                                                                 | 输出和语义                                                                                              |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| `GET /integrations/chatgpt/tasks/:taskId/links`            | 已授权的确切任务 ID                                                                  | 直接与继承关联、父任务信息、`revision`                                                                  |
+| `PUT /integrations/chatgpt/tasks/:taskId/links`            | `kind`、`url`、`title?`、`mode: ensure / append / replace`、`expectedRevision`       | 仅更新目标关联，返回附件 ID 和实际 revision；ensure 相同 URL 无操作                                     |
+| `DELETE /integrations/chatgpt/tasks/:taskId/links/:linkId` | `expectedRevision`                                                                   | 只删目标受管附件；重复删除返回 `alreadyAbsent`                                                          |
+| `PUT /integrations/chatgpt/subtasks/:commandId`            | `parentTaskId`、`title`、`conversationUrl?`、`notes?`、`estimateMinutes?`、`dueDay?` | 用固定命令 ID 创建含会话链接的完整子任务；返回 taskId 与保存结果                                        |
+| `PUT /integrations/chatgpt/tasks/:taskId/completion`       | `isDone`、`expectedIsDone`                                                           | 在 renderer 同一执行段核对当前状态并修改，避免桥接先读后调通用 PATCH 的本机竞态；相同目标状态返回无操作 |
 
 通用响应沿用 `{ok:true,data:...}` / `{ok:false,error:{code,message}}`，另附可机器判断的错误详情。参数未定义字段拒绝；外部标题使用字面值，关闭 short syntax，不把 `#tag/+Project/@date` 意外解释成操作。
 
-| HTTP 状态 | 错误码 | 调用方处理 |
-| --- | --- | --- |
-| 400 | `INVALID_INPUT / UNSUPPORTED_TARGET_URL / INVALID_PARENT` | 更正输入；不重试原参数 |
-| 401 / 403 | `UNAUTHORIZED / OUT_OF_SCOPE` | 恢复认证或由用户扩大本机授权；不能换任务 ID 绕过 |
-| 404 | `TASK_NOT_FOUND / TARGET_REMOVED` | 刷新目标；不能自动重建 |
-| 409 | `BINDING_EXISTS / REVISION_CONFLICT / STATE_CONFLICT / IDEMPOTENCY_CONFLICT` | 重读并明确选择；不覆盖 |
-| 410 | `EXPIRED_DRAFT` | 重新准备预览；不能悄悄重用旧草稿 |
-| 413 / 429 | `LIMIT_EXCEEDED / RATE_LIMITED` | 缩小范围或按提示稍后操作；不拆分成无界循环 |
-| 503 | `APP_NOT_READY / CONNECTION_UNAVAILABLE` | 用户启动 SP 或修复连接；写入仍按 commandId 核对 |
-| 504 | `OUTCOME_UNKNOWN` | 查询预定 taskId 与操作日志，不当作“未写入” |
+| HTTP 状态 | 错误码                                                                       | 调用方处理                                       |
+| --------- | ---------------------------------------------------------------------------- | ------------------------------------------------ |
+| 400       | `INVALID_INPUT / UNSUPPORTED_TARGET_URL / INVALID_PARENT`                    | 更正输入；不重试原参数                           |
+| 401 / 403 | `UNAUTHORIZED / OUT_OF_SCOPE`                                                | 恢复认证或由用户扩大本机授权；不能换任务 ID 绕过 |
+| 404       | `TASK_NOT_FOUND / TARGET_REMOVED`                                            | 刷新目标；不能自动重建                           |
+| 409       | `BINDING_EXISTS / REVISION_CONFLICT / STATE_CONFLICT / IDEMPOTENCY_CONFLICT` | 重读并明确选择；不覆盖                           |
+| 410       | `EXPIRED_DRAFT`                                                              | 重新准备预览；不能悄悄重用旧草稿                 |
+| 413 / 429 | `LIMIT_EXCEEDED / RATE_LIMITED`                                              | 缩小范围或按提示稍后操作；不拆分成无界循环       |
+| 503       | `APP_NOT_READY / CONNECTION_UNAVAILABLE`                                     | 用户启动 SP 或修复连接；写入仍按 commandId 核对  |
+| 504       | `OUTCOME_UNKNOWN`                                                            | 查询预定 taskId 与操作日志，不当作“未写入”       |
 
 桥接独立限制每连接每分钟 30 次写入；读结果按条数和 256 KiB 响应上限截断，备注默认省略。限流返回重试时间；创建结果未知时，等待时间结束也不构成可以盲目重发的理由。
 
@@ -135,16 +137,16 @@ flowchart TB
 
 桥接作为独立包 `packages/chatgpt-task-bridge/`，自有 package.json、锁文件和验证脚本；不把 MCP SDK 或其他依赖加入根包。根应用继续使用已有机制，不替换现有 MCP 实现。
 
-| 工具 | 关键参数 | 读写与目的 |
-| --- | --- | --- |
-| `get_connection_status` | 无 | 只读；SP 在线、桥接版本、授权范围；不回显密钥 |
-| `find_linked_tasks` | `taskId? / targetUrl? / query?`、`limit?` | 只读；在已授权集合中查候选，任务名只帮助选择 |
-| `get_task_context` | `taskId` | 只读；父子关系、关联、状态和 revision；备注另需授权 |
-| `bind_chatgpt_link` | `taskId`、`kind`、`url`、`mode`、`expectedRevision` | 写；保存已选定项目或会话关联 |
-| `prepare_subtasks` | `parentTaskId`、`items[]`、显式会话链接 | 写本机临时草稿，不修改 SP；返回不可变 draftId、各项预定 taskId、有效期和预览 |
-| `apply_subtasks` | `draftId` | 写；按草稿执行，返回逐项结果；不能偷偷改变已预览标题或父任务 |
-| `set_task_completion` | `taskId`、`isDone`、`expectedIsDone` | 写；只更新完成状态，先比较旧状态；不接受任意 task patch |
-| `unlink_chatgpt_link` | `taskId`、`linkId`、`expectedRevision` | 写；解除关联，不能删除 ChatGPT 资源或 SP 任务 |
+| 工具                    | 关键参数                                            | 读写与目的                                                                   |
+| ----------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `get_connection_status` | 无                                                  | 只读；SP 在线、桥接版本、授权范围；不回显密钥                                |
+| `find_linked_tasks`     | `taskId? / targetUrl? / query?`、`limit?`           | 只读；在已授权集合中查候选，任务名只帮助选择                                 |
+| `get_task_context`      | `taskId`                                            | 只读；父子关系、关联、状态和 revision；备注另需授权                          |
+| `bind_chatgpt_link`     | `taskId`、`kind`、`url`、`mode`、`expectedRevision` | 写；保存已选定项目或会话关联                                                 |
+| `prepare_subtasks`      | `parentTaskId`、`items[]`、显式会话链接             | 写本机临时草稿，不修改 SP；返回不可变 draftId、各项预定 taskId、有效期和预览 |
+| `apply_subtasks`        | `draftId`                                           | 写；按草稿执行，返回逐项结果；不能偷偷改变已预览标题或父任务                 |
+| `set_task_completion`   | `taskId`、`isDone`、`expectedIsDone`                | 写；只更新完成状态，先比较旧状态；不接受任意 task patch                      |
+| `unlink_chatgpt_link`   | `taskId`、`linkId`、`expectedRevision`              | 写；解除关联，不能删除 ChatGPT 资源或 SP 任务                                |
 
 读工具标注 `readOnlyHint:true`；其余按实际副作用标注。写工具的确认遵从宿主设置，服务端仍验证授权、草稿和资源归属。不存在自动获取当前项目/会话的隐藏入参。
 
@@ -156,8 +158,16 @@ flowchart TB
   "arguments": {
     "parentTaskId": "已读取并选定的主任务ID",
     "items": [
-      {"title": "确认统计口径", "conversationUrl": "用户提供的真实会话链接", "estimateMinutes": 30},
-      {"title": "开发统计接口", "conversationUrl": "用户提供的真实会话链接", "estimateMinutes": 120}
+      {
+        "title": "确认统计口径",
+        "conversationUrl": "用户提供的真实会话链接",
+        "estimateMinutes": 30
+      },
+      {
+        "title": "开发统计接口",
+        "conversationUrl": "用户提供的真实会话链接",
+        "estimateMinutes": 120
+      }
     ]
   }
 }
@@ -173,11 +183,11 @@ flowchart TB
 
 拟定三张本机表：
 
-| 表 | 字段与约束 |
-| --- | --- |
-| `bridge_draft` | `id TEXT PRIMARY KEY`、`connection_id TEXT`、`parent_task_id TEXT`、`payload_json TEXT`、`payload_hash TEXT`、`expires_at INTEGER` |
-| `bridge_command` | `id TEXT PRIMARY KEY`、`draft_id TEXT`、`item_index INTEGER`、`task_id TEXT UNIQUE`、`state TEXT`、`payload_hash TEXT`、`result_json TEXT NULL`、`updated_at INTEGER`；唯一 `(draft_id,item_index)` |
-| `bridge_connection` | `id TEXT PRIMARY KEY`、`allowed_root_task_ids_json TEXT`、`scopes_json TEXT`、`revoked_at INTEGER NULL`；凭据材料单独存入操作系统凭据设施 |
+| 表                  | 字段与约束                                                                                                                                                                                          |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bridge_draft`      | `id TEXT PRIMARY KEY`、`connection_id TEXT`、`parent_task_id TEXT`、`payload_json TEXT`、`payload_hash TEXT`、`expires_at INTEGER`                                                                  |
+| `bridge_command`    | `id TEXT PRIMARY KEY`、`draft_id TEXT`、`item_index INTEGER`、`task_id TEXT UNIQUE`、`state TEXT`、`payload_hash TEXT`、`result_json TEXT NULL`、`updated_at INTEGER`；唯一 `(draft_id,item_index)` |
+| `bridge_connection` | `id TEXT PRIMARY KEY`、`allowed_root_task_ids_json TEXT`、`scopes_json TEXT`、`revoked_at INTEGER NULL`；凭据材料单独存入操作系统凭据设施                                                           |
 
 按 `draft_id`、`expires_at`、`updated_at` 建索引；`state` 只取 `prepared / dispatching / saved / outcome_unknown / conflict`。JSON 与标题、URL 长度由入口限制；不把命令参数串接成 SQL。
 
@@ -209,27 +219,27 @@ flowchart TB
 
 以下路径是未来实现位置，不表示文件已存在：
 
-| 位置 | 内容 |
-| --- | --- |
-| `src/app/features/tasks/chatgpt-links/` | 纯 URL 规范化与受管附件识别、命令服务、单元测试 |
-| `src/app/features/tasks/chatgpt-links/local-rest-api-chatgpt-routes.service.ts` | 窄路由、旧快照比较、原生任务 action、持久化确认 |
-| `src/main.ts` | 在已存在的 multi provider 装配位置注册 `LOCAL_REST_API_FEATURE_ROUTES`，不在 core 引入 feature |
-| `packages/chatgpt-task-bridge/` | MCP 工具、连接授权、本机 REST 客户端、SQLite 操作日志、包级测试 |
-| `packages/chatgpt-task-bridge/plugin/` | 待验证后制作宿主插件清单与可选技能；按届时官方打包契约生成，不先写假清单 |
-| `e2e/tests/` 对应任务、同步测试目录 | 主任务、附件、子任务原子操作、跨设备与旧客户端行为回归 |
-| `docs/wiki/3.01-API.md` 等维护文档 | 实际上线接口、数据流与限制；只有实现后才写成已有功能 |
+| 位置                                                                            | 内容                                                                                           |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `src/app/features/tasks/chatgpt-links/`                                         | 纯 URL 规范化与受管附件识别、命令服务、单元测试                                                |
+| `src/app/features/tasks/chatgpt-links/local-rest-api-chatgpt-routes.service.ts` | 窄路由、旧快照比较、原生任务 action、持久化确认                                                |
+| `src/main.ts`                                                                   | 在已存在的 multi provider 装配位置注册 `LOCAL_REST_API_FEATURE_ROUTES`，不在 core 引入 feature |
+| `packages/chatgpt-task-bridge/`                                                 | MCP 工具、连接授权、本机 REST 客户端、SQLite 操作日志、包级测试                                |
+| `packages/chatgpt-task-bridge/plugin/`                                          | 待验证后制作宿主插件清单与可选技能；按届时官方打包契约生成，不先写假清单                       |
+| `e2e/tests/` 对应任务、同步测试目录                                             | 主任务、附件、子任务原子操作、跨设备与旧客户端行为回归                                         |
+| `docs/wiki/3.01-API.md` 等维护文档                                              | 实际上线接口、数据流与限制；只有实现后才写成已有功能                                           |
 
 不修改本分支的 AGENTS.md、根依赖、现有 MCP scope 和同步 schema。若实现中必须改变公共类型或新增 action，先更新兼容性评估，再实施。
 
 ## 9. 分阶段执行
 
-| 阶段 | 产物 | 退出条件 |
-| --- | --- | --- |
-| A：能力验证 | 独立测试数据；真实项目/会话链接样本；隧道与认证验证记录；附件兼容、落盘屏障、固定 taskId 原子创建实验 | 证明不依赖 ChatGPT 内部 API；确定真实链接解析规则和可用传输路径 |
-| B：SP 端关联 | URL 规则、受管 LINK、窄接口、单次 task action、查询与解除 | AC01、03、04、05、09、10；旧客户端和双设备附件写入实测 |
-| C：私用 MCP 闭环 | 独立桥接包、根任务授权、创建草稿、恢复日志、状态写入、私有 ChatGPT 连接 | AC02、06、07、08、11、12；真实项目中执行完整流程 |
-| D：体验收敛 | 可选卡片、SP 菜单、安装包、使用文档、故障诊断与清理 | 通过键盘与长列表检查；主机离线、凭据撤销、卸载回退明确 |
-| E：公开分发（后续） | OAuth HTTPS 网关、出站设备代理、多用户隔离、插件提交材料 | 单独验证并交付；不作为私用版本的隐含承诺 |
+| 阶段                | 产物                                                                                                  | 退出条件                                                        |
+| ------------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| A：能力验证         | 独立测试数据；真实项目/会话链接样本；隧道与认证验证记录；附件兼容、落盘屏障、固定 taskId 原子创建实验 | 证明不依赖 ChatGPT 内部 API；确定真实链接解析规则和可用传输路径 |
+| B：SP 端关联        | URL 规则、受管 LINK、窄接口、单次 task action、查询与解除                                             | AC01、03、04、05、09、10；旧客户端和双设备附件写入实测          |
+| C：私用 MCP 闭环    | 独立桥接包、根任务授权、创建草稿、恢复日志、状态写入、私有 ChatGPT 连接                               | AC02、06、07、08、11、12；真实项目中执行完整流程                |
+| D：体验收敛         | 可选卡片、SP 菜单、安装包、使用文档、故障诊断与清理                                                   | 通过键盘与长列表检查；主机离线、凭据撤销、卸载回退明确          |
+| E：公开分发（后续） | OAuth HTTPS 网关、出站设备代理、多用户隔离、插件提交材料                                              | 单独验证并交付；不作为私用版本的隐含承诺                        |
 
 设计分支配套了[独立双边交互原型](../prototypes/chatgpt-task-links/README.md)，演示双向跳转、创建子任务、状态更新与窗口间联动。原型使用虚构数据和浏览器本地存储，不将阶段 A 的账号验证或后续生产代码标记完成。
 
