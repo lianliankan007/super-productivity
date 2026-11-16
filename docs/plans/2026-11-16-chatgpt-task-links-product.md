@@ -7,6 +7,7 @@
 - 源码基线：上游 `master`，`2b3f78edbf0721f0842daa097e47247fe245852f`，根包版本 `20.0.0`；版本字段不代表已发布客户端均有这些能力。
 - 完成条件：按技术方案完成关联、创建子任务、进度更新和真实 ChatGPT 接入验收；随后将稳定契约迁入维护文档，移除本计划。
 - 技术契约：[技术方案与实施计划](2026-11-16-chatgpt-task-links-technical.md)
+- 交互原型：[打开 Demo](../prototypes/chatgpt-task-links/index.html)；[使用与验证](../prototypes/chatgpt-task-links/README.md)。双端均为本地模拟，未接入真实账号。
 
 ## 1. 要解决的问题
 

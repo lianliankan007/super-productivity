@@ -1,0 +1,2385 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+    <meta
+      name="color-scheme"
+      content="light"
+    />
+    <meta
+      name="referrer"
+      content="no-referrer"
+    />
+    <link
+      rel="icon"
+      href="data:,"
+    />
+    <title>任务与对话 · 双边交互 Demo</title>
+    <style>
+      :root {
+        --bg: #edf1f7;
+        --paper: #fff;
+        --ink: #18202b;
+        --muted: #637083;
+        --line: #e4e9f0;
+        --soft: #f6f8fb;
+        --blue: #315bf2;
+        --blue-soft: #edf1ff;
+        --green: #087c65;
+        --green-soft: #eaf6f1;
+        --red: #b43e3e;
+        --gold: #775f24;
+        --shadow: 0 16px 44px #263b5d0d;
+        --overlay: #18202b55;
+        --s: 8px;
+        --s2: 16px;
+        --s3: 24px;
+        --s4: 32px;
+        --r: 12px;
+        --small: 12px;
+        --body: 14px;
+        --large: 18px;
+        --display: 28px;
+        --fast: 160ms;
+        --modal-z: 20;
+        --toast-z: 30;
+        font-family: 'Segoe UI', 'Microsoft YaHei UI', 'PingFang SC', sans-serif;
+        color: var(--ink);
+        background: var(--bg);
+        font-size: var(--body);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+      }
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+      button,
+      a,
+      input,
+      select,
+      textarea {
+        -webkit-tap-highlight-color: transparent;
+      }
+      button,
+      a {
+        touch-action: manipulation;
+      }
+      button {
+        cursor: pointer;
+      }
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+      a {
+        color: inherit;
+      }
+      button,
+      a,
+      input,
+      select,
+      textarea,
+      [tabindex]:focus {
+        outline-offset: 4px;
+      }
+      :focus-visible {
+        outline: 3px solid var(--blue);
+      }
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+      h1 {
+        font-size: var(--large);
+        letter-spacing: -0.5px;
+      }
+      h2 {
+        font-size: 22px;
+        letter-spacing: -0.5px;
+        line-height: 1.4;
+      }
+      h3 {
+        font-size: var(--body);
+      }
+      .icon {
+        width: 18px;
+        height: 18px;
+        flex: 0 0 auto;
+        vertical-align: middle;
+      }
+      .icon.sm {
+        width: 15px;
+        height: 15px;
+      }
+      .header {
+        min-height: 74px;
+        padding: var(--s2) var(--s4);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--s2);
+        background: var(--paper);
+        border-bottom: 1px solid var(--line);
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .brand-mark {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        background: var(--ink);
+        color: var(--paper);
+      }
+      .brand p {
+        font-size: var(--small);
+        color: var(--muted);
+        margin-top: 3px;
+      }
+      .actions,
+      .row {
+        display: flex;
+        align-items: center;
+        gap: var(--s);
+      }
+      .wrap {
+        flex-wrap: wrap;
+      }
+      .space {
+        justify-content: space-between;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .small {
+        font-size: var(--small);
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 9px;
+        border-radius: 6px;
+        font-size: var(--small);
+        line-height: 1.3;
+        background: var(--soft);
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .pill.green {
+        background: var(--green-soft);
+        color: var(--green);
+      }
+      .pill.blue {
+        background: var(--blue-soft);
+        color: var(--blue);
+      }
+      .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+      }
+      .btn {
+        border: 1px solid var(--line);
+        border-radius: var(--s);
+        background: var(--paper);
+        color: var(--ink);
+        padding: 8px 12px;
+        min-height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        text-decoration: none;
+        line-height: 1.3;
+      }
+      .btn:hover {
+        background: var(--soft);
+      }
+      .btn.primary {
+        background: var(--blue);
+        color: var(--paper);
+        border-color: var(--blue);
+      }
+      .btn.primary:hover {
+        filter: brightness(0.95);
+      }
+      .btn.chat-primary {
+        background: var(--green);
+        border-color: var(--green);
+        color: var(--paper);
+      }
+      .btn.quiet {
+        background: transparent;
+        border-color: transparent;
+        color: var(--muted);
+      }
+      .btn.quiet:hover {
+        background: var(--soft);
+        color: var(--ink);
+      }
+      .btn.danger {
+        color: var(--red);
+      }
+      .btn.compact {
+        padding: 6px 9px;
+        min-height: 30px;
+        font-size: var(--small);
+      }
+      .icon-btn {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        flex-shrink: 0;
+      }
+      .stage-bar {
+        padding: 22px var(--s4) var(--s2);
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: var(--s2);
+      }
+      .stage-bar h2 {
+        font-size: var(--display);
+        font-weight: 650;
+      }
+      .stage-bar p {
+        margin-top: 7px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+      .segmented {
+        display: flex;
+        padding: 4px;
+        background: #dde4ef;
+        border-radius: 10px;
+        gap: 2px;
+      }
+      .segmented button {
+        border: 0;
+        background: transparent;
+        padding: 8px 13px;
+        border-radius: 7px;
+        color: #4d5b6e;
+        white-space: nowrap;
+      }
+      .segmented button[aria-pressed='true'] {
+        background: var(--paper);
+        color: var(--ink);
+        box-shadow: 0 2px 5px #18202b0a;
+      }
+      .workspace {
+        padding: 0 var(--s4);
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 38px minmax(0, 1fr);
+        align-items: stretch;
+      }
+      .app {
+        min-width: 0;
+        border: 1px solid #d7dfeb;
+        border-radius: var(--r);
+        background: var(--paper);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      .app-bar {
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--s2);
+        border-bottom: 1px solid var(--line);
+        gap: var(--s);
+      }
+      .app-name {
+        font-weight: 650;
+        display: flex;
+        align-items: center;
+        gap: var(--s);
+        font-size: 13px;
+      }
+      .app-name .sp-logo {
+        background: var(--blue);
+        color: var(--paper);
+        width: 23px;
+        height: 23px;
+        border-radius: 6px;
+        display: grid;
+        place-items: center;
+      }
+      .app-name .chat-logo {
+        color: var(--green);
+        display: grid;
+        place-items: center;
+      }
+      .app-state {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .app-layout {
+        display: grid;
+        grid-template-columns: 132px minmax(0, 1fr);
+        min-height: 696px;
+      }
+      .sidebar {
+        padding: var(--s2) 10px;
+        background: #f7f9fc;
+        border-right: 1px solid var(--line);
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      .sidebar .caption {
+        color: var(--muted);
+        font-size: 11px;
+        padding: 18px var(--s) 7px;
+      }
+      .sidebar .caption:first-child {
+        padding-top: 4px;
+      }
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: var(--s);
+        padding: 9px var(--s);
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        text-align: left;
+        color: var(--muted);
+        font-size: var(--small);
+        width: 100%;
+        line-height: 1.5;
+      }
+      .nav-item:hover {
+        background: #eaf0f8;
+      }
+      .nav-item.active {
+        background: var(--blue-soft);
+        color: var(--blue);
+        font-weight: 600;
+      }
+      .chat-app .nav-item.active {
+        background: var(--green-soft);
+        color: var(--green);
+      }
+      .nav-item span:not(.dot) {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .nav-item .count {
+        margin-left: auto;
+        font-size: 11px;
+      }
+      .sidebar-bottom {
+        margin-top: auto;
+        padding: var(--s2) var(--s) 0;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.8;
+      }
+      .mini-avatar {
+        width: 23px;
+        height: 23px;
+        border-radius: 50%;
+        display: inline-grid;
+        place-items: center;
+        background: #e4eaf3;
+        color: #46536b;
+        font-size: 10px;
+        margin-right: 5px;
+      }
+      .surface {
+        min-width: 0;
+        padding: 22px;
+        display: flex;
+        flex-direction: column;
+      }
+      .crumb {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--muted);
+        font-size: 11px;
+        margin-bottom: var(--s2);
+        min-width: 0;
+      }
+      .crumb span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .crumb button {
+        padding: 0;
+        border: 0;
+        background: none;
+        color: var(--muted);
+        font-size: 11px;
+        white-space: nowrap;
+      }
+      .crumb button:hover {
+        color: var(--green);
+      }
+      .task-heading {
+        margin-bottom: 18px;
+      }
+      .task-heading p {
+        margin-top: 7px;
+        font-size: var(--small);
+        line-height: 1.65;
+        color: var(--muted);
+      }
+      .root-switch {
+        display: block;
+        width: 100%;
+        border: 0;
+        padding: 0 20px 0 0;
+        color: var(--ink);
+        font-size: 20px;
+        font-weight: 650;
+        background: transparent;
+        text-overflow: ellipsis;
+      }
+      .task-metrics {
+        display: flex;
+        align-items: center;
+        gap: var(--s);
+        margin: var(--s2) 0 5px;
+      }
+      .progress {
+        height: 4px;
+        background: var(--line);
+        border-radius: 4px;
+        overflow: hidden;
+        flex: 1;
+      }
+      .progress > i {
+        display: block;
+        height: 100%;
+        background: var(--blue);
+        transition: width var(--fast);
+      }
+      .section-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: var(--s2);
+        margin-bottom: var(--s);
+      }
+      .section-title h3 {
+        font-size: var(--small);
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .task-row {
+        display: grid;
+        grid-template-columns: 21px minmax(0, 1fr) 25px;
+        gap: var(--s);
+        align-items: center;
+        padding: 12px var(--s);
+        border-bottom: 1px solid var(--line);
+        border-radius: 6px;
+      }
+      .task-row.selected {
+        background: var(--blue-soft);
+        border-bottom-color: transparent;
+      }
+      .task-row:hover {
+        background: var(--soft);
+      }
+      .task-row.selected:hover {
+        background: var(--blue-soft);
+      }
+      .task-check {
+        width: 17px;
+        height: 17px;
+        margin: 0;
+        accent-color: var(--blue);
+        cursor: pointer;
+      }
+      .task-title {
+        padding: 0;
+        border: 0;
+        background: transparent;
+        text-align: left;
+        min-width: 0;
+        line-height: 1.6;
+        color: var(--ink);
+      }
+      .task-title > span {
+        display: block;
+        overflow-wrap: anywhere;
+      }
+      .task-title .task-meta {
+        color: var(--muted);
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 2px;
+      }
+      .done .task-label {
+        text-decoration: line-through;
+        color: var(--muted);
+      }
+      .task-row .jump {
+        color: var(--blue);
+        border: 0;
+        background: transparent;
+        padding: 4px;
+        display: inline-grid;
+        place-items: center;
+      }
+      .task-detail {
+        margin-top: 22px;
+        padding: var(--s2);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+      }
+      .detail-title {
+        font-weight: 600;
+        font-size: 13px;
+        margin-top: 5px;
+        line-height: 1.6;
+        overflow-wrap: anywhere;
+      }
+      .detail-note {
+        font-size: var(--small);
+        color: var(--muted);
+        line-height: 1.8;
+        margin-top: var(--s);
+      }
+      .context-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid var(--line);
+        border-radius: var(--s);
+        padding: 10px;
+        text-decoration: none;
+        margin-top: var(--s);
+        min-width: 0;
+      }
+      .context-link:hover {
+        border-color: #a7c9bf;
+        background: var(--green-soft);
+      }
+      .context-icon {
+        width: 30px;
+        height: 30px;
+        background: var(--green-soft);
+        color: var(--green);
+        border-radius: 7px;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+      }
+      .context-text {
+        min-width: 0;
+        flex: 1;
+      }
+      .context-text strong {
+        display: block;
+        font-weight: 500;
+        font-size: var(--small);
+        overflow-wrap: anywhere;
+      }
+      .context-text small {
+        display: block;
+        color: var(--muted);
+        font-size: 10px;
+        margin-top: 3px;
+      }
+      .context-link > .icon {
+        width: 15px;
+        color: var(--muted);
+      }
+      .empty {
+        border: 1px dashed #cad3df;
+        padding: var(--s2);
+        border-radius: var(--s);
+        color: var(--muted);
+        font-size: var(--small);
+        line-height: 1.8;
+        margin-top: var(--s);
+      }
+      .task-footer {
+        margin-top: auto;
+        padding-top: var(--s2);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .bridge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #8394b1;
+        position: relative;
+      }
+      .bridge span {
+        width: 26px;
+        height: 26px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: #e2e8f2;
+      }
+      .chat-app .sidebar {
+        background: #f8faf9;
+      }
+      .chat-app .surface {
+        padding: 18px 20px;
+      }
+      .chat-top {
+        margin-bottom: var(--s2);
+      }
+      .chat-top h2 {
+        font-size: var(--large);
+        line-height: 1.5;
+      }
+      .chat-top .small {
+        margin-top: 4px;
+      }
+      .chat-stream {
+        flex: 1;
+        min-width: 0;
+      }
+      .user-message {
+        background: #eef2f1;
+        border-radius: 13px 13px 3px 13px;
+        padding: 12px 14px;
+        font-size: 13px;
+        line-height: 1.8;
+        margin: var(--s2) 0 var(--s3) 30px;
+      }
+      .assistant-title {
+        display: flex;
+        align-items: center;
+        gap: var(--s);
+        font-weight: 600;
+        font-size: 13px;
+        margin-bottom: 10px;
+      }
+      .assistant-title .icon {
+        color: var(--green);
+      }
+      .assistant-text {
+        font-size: 13px;
+        line-height: 1.9;
+        color: #3c4a58;
+      }
+      .plugin-card {
+        margin-top: 14px;
+        border: 1px solid #cadfd8;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .plugin-head {
+        padding: 11px 13px;
+        display: flex;
+        align-items: center;
+        gap: var(--s);
+        background: #f3f9f6;
+        border-bottom: 1px solid #dfece6;
+        font-size: 11px;
+        color: var(--green);
+      }
+      .plugin-head span:last-child {
+        margin-left: auto;
+      }
+      .plugin-body {
+        padding: 13px;
+      }
+      .target-label {
+        font-size: 10px;
+        color: var(--muted);
+        margin-bottom: 5px;
+      }
+      .target-select {
+        border: 1px solid var(--line);
+        background: var(--paper);
+        border-radius: 6px;
+        width: 100%;
+        padding: 8px;
+        color: var(--ink);
+        font-size: var(--small);
+      }
+      .draft-item {
+        display: grid;
+        grid-template-columns: 17px minmax(0, 1fr) 53px;
+        align-items: center;
+        gap: var(--s);
+        margin-top: 12px;
+      }
+      .draft-item input[type='checkbox'] {
+        accent-color: var(--green);
+        margin: 0;
+      }
+      .draft-title {
+        width: 100%;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+        padding: 6px 0;
+        font-size: var(--small);
+        color: var(--ink);
+        background: transparent;
+        min-width: 0;
+      }
+      .draft-time {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        padding: 5px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .draft-info {
+        display: flex;
+        gap: 5px;
+        align-items: start;
+        margin: 13px 0;
+        font-size: 10px;
+        line-height: 1.7;
+        color: var(--muted);
+      }
+      .draft-info .icon {
+        margin-top: 1px;
+      }
+      .plugin-actions {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .plugin-task {
+        display: flex;
+        align-items: center;
+        gap: var(--s);
+        padding: 9px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: var(--small);
+      }
+      .plugin-task:last-child {
+        border-bottom: 0;
+      }
+      .plugin-task > a {
+        margin-left: auto;
+        color: var(--blue);
+        text-decoration: none;
+        flex-shrink: 0;
+      }
+      .plugin-task > span {
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+      .saved-mark {
+        display: flex;
+        gap: var(--s);
+        align-items: center;
+        color: var(--green);
+        font-weight: 600;
+        margin-bottom: var(--s);
+        font-size: 13px;
+      }
+      .quick-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: var(--s2) 0 10px;
+      }
+      .quick-actions .btn {
+        border-radius: 16px;
+        font-size: 10px;
+        min-height: 28px;
+        padding: 6px 9px;
+      }
+      .composer {
+        margin-top: auto;
+        padding-top: var(--s2);
+      }
+      .composer-box {
+        display: flex;
+        gap: var(--s);
+        align-items: end;
+        border: 1px solid #d6e0dc;
+        border-radius: 12px;
+        padding: 10px;
+        background: var(--paper);
+      }
+      .composer textarea {
+        resize: none;
+        border: 0;
+        background: transparent;
+        width: 100%;
+        min-height: 42px;
+        max-height: 100px;
+        outline-offset: 1px;
+        font-size: var(--small);
+        line-height: 1.8;
+        color: var(--ink);
+      }
+      .composer-note {
+        font-size: 10px;
+        color: var(--muted);
+        text-align: center;
+        margin-top: 7px;
+      }
+      .project-summary {
+        padding: var(--s2);
+        background: var(--green-soft);
+        border-radius: 10px;
+        margin: var(--s2) 0;
+        line-height: 1.8;
+      }
+      .conversation-card {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 14px 0;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+        background: transparent;
+        color: var(--ink);
+      }
+      .conversation-card:hover {
+        color: var(--green);
+      }
+      .conversation-card strong {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .conversation-card small {
+        color: var(--muted);
+        font-size: 11px;
+        display: block;
+        margin-top: 5px;
+        line-height: 1.7;
+      }
+      .project-task-link {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        text-decoration: none;
+        border: 1px solid var(--line);
+        border-radius: var(--s);
+        margin-top: var(--s);
+        padding: 10px;
+      }
+      .project-task-link:hover {
+        background: var(--blue-soft);
+        border-color: #becbf9;
+      }
+      .project-task-link .context-icon {
+        background: var(--blue-soft);
+        color: var(--blue);
+      }
+      .caption-footer {
+        padding: 15px var(--s4) 22px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--s2);
+        font-size: 11px;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+      .caption-footer details summary {
+        cursor: pointer;
+      }
+      .caption-footer details p {
+        max-width: 65ch;
+        margin-top: var(--s);
+      }
+      .caption-footer > span {
+        flex-shrink: 0;
+      }
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 28px;
+        transform: translateX(-50%);
+        background: var(--ink);
+        color: var(--paper);
+        padding: 12px 18px;
+        border-radius: 10px;
+        box-shadow: var(--shadow);
+        z-index: var(--toast-z);
+        max-width: min(90vw, 650px);
+        font-size: 13px;
+        line-height: 1.7;
+      }
+      .toast[hidden] {
+        display: none;
+      }
+      dialog {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 0;
+        width: min(520px, calc(100vw - 32px));
+        box-shadow: 0 24px 80px #18202b26;
+        color: var(--ink);
+        background: var(--paper);
+      }
+      dialog::backdrop {
+        background: var(--overlay);
+        backdrop-filter: blur(3px);
+      }
+      .dialog-head {
+        padding: 20px var(--s3) var(--s2);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--line);
+      }
+      .dialog-head h2 {
+        font-size: var(--large);
+      }
+      .dialog-body {
+        padding: 20px var(--s3);
+        max-height: 65vh;
+        overflow: auto;
+      }
+      .dialog-foot {
+        display: flex;
+        justify-content: end;
+        gap: var(--s);
+        padding: var(--s2) var(--s3);
+        background: var(--soft);
+      }
+      .field {
+        display: block;
+        margin-top: var(--s2);
+      }
+      .field:first-child {
+        margin-top: 0;
+      }
+      .field > span {
+        display: block;
+        margin-bottom: 7px;
+        font-size: var(--small);
+        color: var(--muted);
+      }
+      .field input,
+      .field select,
+      .field textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #cad3df;
+        border-radius: 7px;
+        background: var(--paper);
+        color: var(--ink);
+      }
+      .field textarea {
+        min-height: 88px;
+        resize: vertical;
+      }
+      .field-error {
+        color: var(--red);
+        font-size: var(--small);
+        margin-top: 10px;
+        min-height: 18px;
+      }
+      .choice {
+        display: flex;
+        align-items: start;
+        gap: 10px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: var(--s);
+        margin-top: var(--s);
+        cursor: pointer;
+      }
+      .choice input {
+        accent-color: var(--blue);
+        margin-top: 3px;
+      }
+      .choice strong {
+        font-size: 13px;
+        display: block;
+        font-weight: 500;
+      }
+      .choice small {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        margin-top: 4px;
+        line-height: 1.7;
+      }
+      .notice {
+        padding: 10px 12px;
+        background: var(--soft);
+        border-radius: 7px;
+        font-size: var(--small);
+        line-height: 1.8;
+        color: var(--muted);
+        margin-top: var(--s2);
+      }
+      .guide-step {
+        display: flex;
+        align-items: start;
+        gap: 13px;
+        margin-bottom: 20px;
+      }
+      .guide-step .number {
+        width: 25px;
+        height: 25px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: var(--blue-soft);
+        color: var(--blue);
+        font-size: var(--small);
+      }
+      .guide-step h3 {
+        margin-top: 2px;
+      }
+      .guide-step p {
+        color: var(--muted);
+        font-size: var(--small);
+        line-height: 1.8;
+        margin-top: 5px;
+      }
+      .flash {
+        animation: target-flash 1.1s ease-out;
+      }
+      @keyframes target-flash {
+        0%,
+        35% {
+          box-shadow: 0 0 0 3px #315bf255;
+        }
+        100% {
+          box-shadow: var(--shadow);
+        }
+      }
+      body[data-view='sp'] .workspace,
+      body[data-view='chat'] .workspace {
+        display: block;
+        max-width: 1120px;
+        margin: auto;
+      }
+      body[data-view='sp'] .chat-app,
+      body[data-view='chat'] .sp-app,
+      body:not([data-view='split']) .bridge {
+        display: none;
+      }
+      body:not([data-view='split']) .app-layout {
+        grid-template-columns: 190px minmax(0, 1fr);
+        min-height: 650px;
+      }
+      body:not([data-view='split']) .surface {
+        padding: var(--s3) var(--s4);
+      }
+      body:not([data-view='split']) .chat-stream,
+      body:not([data-view='split']) .composer {
+        width: min(100%, 650px);
+        margin-left: auto;
+        margin-right: auto;
+      }
+      @media (min-width: 1700px) {
+        .workspace {
+          max-width: 1920px;
+          margin: auto;
+        }
+        .app-layout {
+          grid-template-columns: 170px minmax(0, 1fr);
+          min-height: 760px;
+        }
+        .surface {
+          padding: var(--s3) var(--s4);
+        }
+        .chat-app .surface {
+          padding: var(--s3) var(--s4);
+        }
+      }
+      @media (max-width: 1150px) {
+        .workspace {
+          padding: 0 var(--s2);
+          grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1fr);
+        }
+        .header {
+          padding: var(--s2);
+        }
+        .stage-bar {
+          padding: var(--s2);
+        }
+        .stage-bar h2 {
+          font-size: 24px;
+        }
+        .app-layout {
+          grid-template-columns: 105px minmax(0, 1fr);
+        }
+        .surface,
+        .chat-app .surface {
+          padding: var(--s2) 12px;
+        }
+        .app-state {
+          display: none;
+        }
+        .caption-footer {
+          padding: var(--s2);
+        }
+      }
+      @media (max-width: 900px) {
+        .workspace {
+          display: block;
+        }
+        .bridge {
+          height: 28px;
+        }
+        .bridge span {
+          transform: rotate(90deg);
+        }
+        .app-layout {
+          grid-template-columns: 132px minmax(0, 1fr);
+          min-height: 650px;
+        }
+        .stage-bar {
+          align-items: start;
+          flex-direction: column;
+          gap: 14px;
+        }
+        .surface,
+        .chat-app .surface {
+          padding: 20px;
+        }
+        .header .pill {
+          display: none;
+        }
+        .caption-footer {
+          align-items: start;
+          flex-direction: column;
+          gap: 4px;
+        }
+      }
+      @media (max-width: 520px) {
+        .header {
+          gap: var(--s);
+        }
+        .brand p {
+          display: none;
+        }
+        .brand h1 {
+          font-size: 15px;
+        }
+        .brand-mark {
+          width: 30px;
+          height: 30px;
+        }
+        .header .btn {
+          padding: 7px;
+          font-size: 11px;
+        }
+        .header .btn .icon {
+          display: none;
+        }
+        .workspace {
+          padding: 0 10px;
+        }
+        .app-layout,
+        body:not([data-view='split']) .app-layout {
+          grid-template-columns: minmax(0, 1fr);
+        }
+        .sidebar {
+          display: none;
+        }
+        .surface,
+        .chat-app .surface,
+        body:not([data-view='split']) .surface {
+          padding: var(--s2);
+        }
+        .stage-bar h2 {
+          font-size: 24px;
+        }
+        .stage-bar p {
+          font-size: 12px;
+        }
+        .app-bar {
+          padding: 0 12px;
+        }
+        .app-layout {
+          min-height: 640px;
+        }
+        .dialog-body {
+          padding: var(--s2);
+        }
+        .caption-footer > span {
+          white-space: normal;
+          flex-shrink: 1;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation: none !important;
+          transition: none !important;
+          scroll-behavior: auto !important;
+        }
+      }
+      @media print {
+        .header,
+        .stage-bar,
+        .bridge,
+        .sidebar,
+        .caption-footer,
+        .composer,
+        .quick-actions,
+        .toast,
+        dialog {
+          display: none !important;
+        }
+        .workspace {
+          display: block;
+          padding: 0;
+        }
+        .app {
+          box-shadow: none;
+          break-inside: avoid;
+          margin-bottom: 20px;
+        }
+        .app-layout {
+          display: block;
+          min-height: 0;
+        }
+        .surface {
+          padding: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body data-view="split">
+    <header class="header">
+      <div class="brand">
+        <div
+          class="brand-mark"
+          data-icon="link"
+        ></div>
+        <div>
+          <h1>任务与对话</h1>
+          <p>Super Productivity × ChatGPT</p>
+        </div>
+      </div>
+      <div class="actions">
+        <span class="pill"><span class="dot"></span>交互原型 · 本地模拟</span
+        ><button
+          class="btn quiet"
+          data-action="guide"
+        >
+          <span data-icon="help"></span>体验指引</button
+        ><button
+          class="btn"
+          data-action="reset"
+        >
+          <span data-icon="reset"></span>重置演示
+        </button>
+      </div>
+    </header>
+    <section
+      class="stage-bar"
+      aria-label="演示视图"
+    >
+      <div>
+        <h2>从一件事，到每一次讨论。</h2>
+        <p>任务有进度，对话有上下文。点开关联，在两边接着做。</p>
+      </div>
+      <div
+        class="segmented"
+        aria-label="选择展示方式"
+      >
+        <button
+          data-view="split"
+          aria-pressed="true"
+        >
+          双边对照</button
+        ><button
+          data-view="sp"
+          aria-pressed="false"
+        >
+          任务端</button
+        ><button
+          data-view="chat"
+          aria-pressed="false"
+        >
+          ChatGPT 端
+        </button>
+      </div>
+    </section>
+    <main class="workspace">
+      <section
+        class="app sp-app"
+        id="sp-panel"
+        aria-label="Super Productivity 任务端"
+      >
+        <div class="app-bar">
+          <div class="app-name">
+            <span
+              class="sp-logo"
+              data-icon="check"
+            ></span
+            >Super Productivity
+          </div>
+          <div class="row">
+            <span class="app-state">任务端演示</span
+            ><a
+              class="btn quiet compact"
+              id="sp-window"
+              target="_blank"
+              rel="noopener"
+              title="在新标签页独立打开任务端"
+              ><span data-icon="external"></span>独立窗口</a
+            >
+          </div>
+        </div>
+        <div class="app-layout">
+          <aside
+            class="sidebar"
+            id="sp-sidebar"
+            aria-label="任务导航"
+          ></aside>
+          <div
+            class="surface"
+            id="sp-surface"
+          ></div>
+        </div>
+      </section>
+      <div
+        class="bridge"
+        aria-hidden="true"
+      >
+        <span data-icon="both"></span>
+      </div>
+      <section
+        class="app chat-app"
+        id="chat-panel"
+        aria-label="ChatGPT 项目与会话端"
+      >
+        <div class="app-bar">
+          <div class="app-name">
+            <span
+              class="chat-logo"
+              data-icon="spark"
+            ></span
+            >ChatGPT
+          </div>
+          <div class="row">
+            <span class="app-state">项目与会话演示</span
+            ><a
+              class="btn quiet compact"
+              id="chat-window"
+              target="_blank"
+              rel="noopener"
+              title="在新标签页独立打开 ChatGPT 端"
+              ><span data-icon="external"></span>独立窗口</a
+            >
+          </div>
+        </div>
+        <div class="app-layout">
+          <aside
+            class="sidebar"
+            id="chat-sidebar"
+            aria-label="ChatGPT 项目导航"
+          ></aside>
+          <div
+            class="surface"
+            id="chat-surface"
+          ></div>
+        </div>
+      </section>
+    </main>
+    <footer class="caption-footer">
+      <details>
+        <summary>演示范围与数据说明</summary>
+        <p>
+          两端都是交互原型，使用虚构的示例任务和对话。改动仅保存在此浏览器；没有调用真实
+          ChatGPT、Super Productivity 或
+          MCP。这里的跳转打开原型中的对应页面，不会创建真实项目或会话。独立窗口在同一服务地址下共享演示状态。
+        </p>
+      </details>
+      <span
+        id="save-status"
+        role="status"
+        >演示数据保存在此浏览器</span
+      >
+    </footer>
+    <div
+      class="toast"
+      id="toast"
+      role="status"
+      aria-live="polite"
+      hidden
+    ></div>
+    <dialog
+      id="modal"
+      aria-labelledby="dialog-title"
+    ></dialog>
+    <script>
+      'use strict';
+      const STORAGE_KEY = 'sp-chatgpt-prototype-v1';
+      const SESSION_KEY = 'sp-chatgpt-prototype-ui-v1';
+      const ICONS = {
+        link: '<path d="m10 13 4-4m-6 6-2 2a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m0 10 4-4a4 4 0 0 0-6-6l-2 2"/>',
+        check: '<path d="m5 12 4 4L19 6"/>',
+        spark: '<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5Z"/>',
+        folder: '<path d="M3 7V5h6l2 2h10v12H3Z"/>',
+        chat: '<path d="M4 4h16v12H9l-5 4Z"/>',
+        arrow: '<path d="M5 12h14m-6-6 6 6-6 6"/>',
+        external: '<path d="M14 3h7v7m0-7-10 10M10 3H3v18h18v-7"/>',
+        plus: '<path d="M12 5v14M5 12h14"/>',
+        help: '<circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 0 1 6 0c0 2-3 2-3 4m0 3v.1"/>',
+        reset: '<path d="M3 4v5h5m-4-1a9 9 0 1 1-1 8"/>',
+        both: '<path d="M4 8h15m-4-4 4 4-4 4M20 16H5m4-4-4 4 4 4"/>',
+        chevron: '<path d="m9 5 7 7-7 7"/>',
+        clock: '<circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/>',
+        close: '<path d="m6 6 12 12M6 18 18 6"/>',
+        send: '<path d="M12 19V5m-6 6 6-6 6 6"/>',
+        list: '<path d="M9 6h12M9 12h12M9 18h12M3 6h1M3 12h1M3 18h1"/>',
+        copy: '<rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V3H3v13h5"/>',
+      };
+      const icon = (name, cls = '') =>
+        `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ICONS.link}</svg>`;
+      const escapeHtml = (value) =>
+        String(value ?? '').replace(
+          /[&<>"']/g,
+          (c) =>
+            ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
+        );
+      const uid = () =>
+        globalThis.crypto?.randomUUID?.() ||
+        `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+      const projects = [
+        {
+          id: 'p1',
+          title: '英国工单 BI',
+          description: '围绕看板建设，保留需求、开发与验收的上下文。',
+        },
+        {
+          id: 'p2',
+          title: '个人学习计划',
+          description: '把学习目标拆成可以持续推进的小任务。',
+        },
+      ];
+      const conversations = [
+        {
+          id: 'c1',
+          projectId: 'p1',
+          title: '需求分析与统计口径',
+          summary: '确认日报维度、统计周期与页面筛选规则。',
+          user: '先把需求和统计口径梳理清楚，后面开发时可以直接引用。',
+          answer:
+            '我们先确认报表的统计维度、时间范围和验收口径。相关结论可以关联到任务，后续讨论继续沿用。',
+          draft: ['补齐统计口径说明', '确认边界场景'],
+        },
+        {
+          id: 'c2',
+          projectId: 'p1',
+          title: '后端实现与接口联调',
+          summary: '拆解接口联调、参数校验与回归检查。',
+          user: '把接口联调和回归验收整理成两条子任务，关联到这次讨论。',
+          answer:
+            '已整理好两项工作。确认后会创建到选定的主任务下，并保留这次会话的入口。',
+          draft: ['完成前后端接口联调', '验证筛选与导出结果'],
+        },
+        {
+          id: 'c3',
+          projectId: 'p1',
+          title: '发布与验收安排',
+          summary: '核对发布顺序，整理验收记录。',
+          user: '帮我整理发布前需要完成的检查。',
+          answer:
+            '可以把发布检查和验收记录分别建立为子任务。先选择它们所属的主任务，再确认创建。',
+          draft: ['核对发布前检查项', '整理验收记录'],
+        },
+        {
+          id: 'c4',
+          projectId: 'p2',
+          title: '每周学习安排',
+          summary: '为本周安排学习内容和复盘。',
+          user: '把本周学习计划整理成两个可以执行的任务。',
+          answer: '学习与复盘可以分开推进。下面先准备草稿，确认后再创建。',
+          draft: ['完成本周学习内容', '整理本周学习笔记'],
+        },
+      ];
+      /** 数据均为演示样例；关系保留在任务上，避免另存一份会漂移的映射。 */
+      function initialData() {
+        return {
+          version: 1,
+          tasks: [
+            {
+              id: 't1',
+              title: '英国工单 BI 看板',
+              parentId: null,
+              group: '工作',
+              done: false,
+              projects: ['p1'],
+              chats: [],
+              note: '完成需求梳理、接口开发和联调验收。',
+            },
+            {
+              id: 't2',
+              title: '确认统计口径',
+              parentId: 't1',
+              done: true,
+              projects: [],
+              chats: ['c1'],
+              minutes: 30,
+              note: '确认日报维度与统计周期。',
+            },
+            {
+              id: 't3',
+              title: '开发统计接口',
+              parentId: 't1',
+              done: false,
+              projects: [],
+              chats: ['c2'],
+              minutes: 120,
+              note: '实现统计查询，并核对筛选参数。',
+            },
+            {
+              id: 't4',
+              title: '核对页面筛选项',
+              parentId: 't1',
+              done: false,
+              projects: [],
+              chats: [],
+              minutes: 45,
+              note: '与需求说明逐项核对页面行为。',
+            },
+            {
+              id: 't5',
+              title: '上线准备与验收',
+              parentId: null,
+              group: '工作',
+              done: false,
+              projects: ['p1'],
+              chats: ['c3'],
+              note: '准备发布说明与业务验收记录。',
+            },
+            {
+              id: 't6',
+              title: '制定本周学习计划',
+              parentId: null,
+              group: '个人',
+              done: false,
+              projects: ['p2'],
+              chats: ['c4'],
+              note: '为学习和复盘安排可执行的时间。',
+            },
+            {
+              id: 't7',
+              title: '整理数据清理方案',
+              parentId: null,
+              group: '工作',
+              done: false,
+              projects: [],
+              chats: [],
+              note: '这是一条尚未绑定 ChatGPT 项目的任务，可用来体验首次关联。',
+            },
+          ],
+          appliedDrafts: {},
+          events: [],
+        };
+      }
+      let storageAvailable = true;
+      function readData() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return initialData();
+          const data = JSON.parse(raw);
+          if (data.version !== 1 || !Array.isArray(data.tasks) || !data.appliedDrafts)
+            throw Error('Invalid prototype data');
+          return data;
+        } catch {
+          storageAvailable = false;
+          return initialData();
+        }
+      }
+      let data = readData();
+      let ui = {
+        rootId: 't1',
+        taskId: 't3',
+        projectId: 'p1',
+        chatId: 'c2',
+        view: 'split',
+        card: 'draft',
+        draft: null,
+        nav: '工作',
+        chatRootId: 't1',
+      };
+      try {
+        const saved = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
+        if (saved) ui = { ...ui, ...saved };
+      } catch {}
+      const getTask = (id) => data.tasks.find((t) => t.id === id);
+      const getProject = (id) => projects.find((p) => p.id === id);
+      const getChat = (id) => conversations.find((c) => c.id === id);
+      const roots = () => data.tasks.filter((t) => !t.parentId);
+      const children = (id) => data.tasks.filter((t) => t.parentId === id);
+      const linkedRoots = (id) => roots().filter((t) => t.projects.includes(id));
+      const currentRoot = () => getTask(ui.rootId) || roots()[0];
+      function saveUI() {
+        try {
+          sessionStorage.setItem(SESSION_KEY, JSON.stringify(ui));
+        } catch {}
+      }
+      /** 每次操作前重读共享数据，独立窗口不把旧快照整份写回。原型不承诺多设备同步。 */
+      function updateData(mutator, message) {
+        const fresh = storageAvailable ? readData() : data;
+        mutator(fresh);
+        fresh.events.unshift({ time: Date.now(), message });
+        fresh.events = fresh.events.slice(0, 30);
+        data = fresh;
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        } catch {
+          storageAvailable = false;
+        }
+        render();
+        if (message) toast(message);
+      }
+      let toastTimer;
+      function toast(message) {
+        const el = document.querySelector('#toast');
+        el.textContent = message;
+        el.hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => (el.hidden = true), 3800);
+      }
+      function pageUrl(surface, route) {
+        const url = new URL(location.href);
+        url.search = '';
+        url.searchParams.set('surface', surface);
+        url.hash = route;
+        return url.href;
+      }
+      const taskUrl = (id) => pageUrl('sp', `sp/task/${encodeURIComponent(id)}`);
+      const projectUrl = (id) =>
+        pageUrl('chat', `chat/project/${encodeURIComponent(id)}`);
+      const chatUrl = (id) => {
+        const c = getChat(id);
+        return pageUrl('chat', `chat/project/${c.projectId}/conversation/${c.id}`);
+      };
+      function ensureUI() {
+        if (!getTask(ui.rootId) || getTask(ui.rootId).parentId) ui.rootId = roots()[0].id;
+        if (
+          !getTask(ui.taskId) ||
+          (getTask(ui.taskId).parentId || getTask(ui.taskId).id) !== ui.rootId
+        )
+          ui.taskId = ui.rootId;
+        if (!getProject(ui.projectId)) ui.projectId = 'p1';
+        if (ui.chatId && getChat(ui.chatId)?.projectId !== ui.projectId) ui.chatId = null;
+        if (!['split', 'sp', 'chat'].includes(ui.view)) ui.view = 'split';
+      }
+      function useRoute() {
+        const parts = location.hash.slice(1).split('/').map(decodeURIComponent);
+        if (parts[0] === 'sp' && parts[1] === 'task' && getTask(parts[2])) {
+          const t = getTask(parts[2]);
+          ui.taskId = t.id;
+          ui.rootId = t.parentId || t.id;
+          ui.nav = getTask(ui.rootId).group;
+        }
+        if (parts[0] === 'chat' && parts[1] === 'project' && getProject(parts[2])) {
+          const nextChat =
+            parts[3] === 'conversation' && getChat(parts[4])?.projectId === parts[2]
+              ? parts[4]
+              : null;
+          const changed = ui.projectId !== parts[2] || ui.chatId !== nextChat;
+          ui.projectId = parts[2];
+          ui.chatId = nextChat;
+          if (changed) {
+            ui.card = 'draft';
+            ui.draft = null;
+            ui.response = null;
+          }
+          const options = linkedRoots(parts[2]);
+          if (!options.some((t) => t.id === ui.chatRootId))
+            ui.chatRootId = options.length === 1 ? options[0].id : '';
+        }
+        const requested = new URLSearchParams(location.search).get('surface');
+        if (['sp', 'chat', 'split'].includes(requested)) ui.view = requested;
+        ensureUI();
+        render();
+      }
+      /** 双边视图在当前页定位，单端视图切换到另一端；链接同时支持原生新标签打开。 */
+      function navigate(route, target) {
+        const oldView = ui.view;
+        if (oldView !== 'split') ui.view = target;
+        const next = new URL(location.href);
+        next.searchParams.set('surface', ui.view);
+        next.hash = route;
+        history.pushState({}, '', next);
+        useRoute();
+        const panel = document.querySelector(`#${target}-panel`);
+        panel.classList.remove('flash');
+        void panel.offsetWidth;
+        panel.classList.add('flash');
+        const heading =
+          target === 'sp'
+            ? document.querySelector('#selected-task-title')
+            : panel.querySelector('h2');
+        if (heading) {
+          heading.setAttribute('tabindex', '-1');
+          heading.focus({ preventScroll: true });
+        }
+        if (matchMedia('(max-width:900px)').matches)
+          panel.scrollIntoView({
+            behavior: matchMedia('(prefers-reduced-motion:reduce)').matches
+              ? 'auto'
+              : 'smooth',
+            block: 'start',
+          });
+      }
+      function jumpTask(id) {
+        navigate(`sp/task/${id}`, 'sp');
+        toast(`已定位任务：${getTask(id).title}`);
+      }
+      function jumpChat(id) {
+        const c = getChat(id);
+        navigate(`chat/project/${c.projectId}/conversation/${id}`, 'chat');
+        toast(`已定位会话：${c.title}`);
+      }
+      function jumpProject(id) {
+        navigate(`chat/project/${id}`, 'chat');
+        toast(`已打开项目：${getProject(id).title}`);
+      }
+      function contextLink(kind, id, inherited = false) {
+        const obj = kind === 'project' ? getProject(id) : getChat(id);
+        if (!obj) return '';
+        return `<a class="context-link" href="${escapeHtml(kind === 'project' ? projectUrl(id) : chatUrl(id))}" data-jump="${kind}" data-id="${id}" aria-label="打开${kind === 'project' ? '项目' : '会话'}：${escapeHtml(obj.title)}"><span class="context-icon">${icon(kind === 'project' ? 'folder' : 'chat')}</span><span class="context-text"><strong>${escapeHtml(obj.title)}</strong><small>${kind === 'project' ? 'ChatGPT 项目' : 'ChatGPT 会话'}${inherited ? ' · 来自主任务' : ''}</small></span>${icon('arrow')}</a>`;
+      }
+      function renderSP() {
+        const root = currentRoot();
+        const selected = getTask(ui.taskId);
+        const childTasks = children(root.id);
+        const done = childTasks.filter((t) => t.done).length;
+        document.querySelector('#sp-sidebar').innerHTML =
+          `<div class="caption">我的任务</div><button class="nav-item ${ui.nav === '全部' ? 'active' : ''}" data-action="filter" data-filter="全部">${icon('list', 'sm')}全部任务<span class="count">${roots().length}</span></button><div class="caption">项目</div>${['工作', '个人'].map((g) => `<button class="nav-item ${ui.nav === g ? 'active' : ''}" data-action="filter" data-filter="${g}">${icon('folder', 'sm')}${g}<span class="count">${roots().filter((t) => t.group === g).length}</span></button>`).join('')}<div class="caption">当前主任务</div>${roots()
+            .filter((t) => ui.nav === '全部' || t.group === ui.nav)
+            .map(
+              (t) =>
+                `<button class="nav-item ${root.id === t.id ? 'active' : ''}" data-action="select-root" data-id="${t.id}"><span>${escapeHtml(t.title)}</span></button>`,
+            )
+            .join(
+              '',
+            )}<div class="sidebar-bottom"><span class="mini-avatar">我</span>个人工作空间<br>演示数据</div>`;
+        const taskRow = (t) =>
+          `<div class="task-row ${selected.id === t.id ? 'selected' : ''} ${t.done ? 'done' : ''}" data-task="${t.id}"><input type="checkbox" class="task-check" aria-label="完成任务：${escapeHtml(t.title)}" data-complete="${t.id}" ${t.done ? 'checked' : ''}><button class="task-title" data-action="select-task" data-id="${t.id}"><span class="task-label">${escapeHtml(t.title)}</span><span class="task-meta">${t.minutes ? `${icon('clock', 'sm')}${t.minutes} 分钟` : ''}${t.chats.length ? `${icon('chat', 'sm')}${t.chats.length} 次讨论` : '尚未关联会话'}</span></button>${t.chats.length ? `<a class="jump" href="${escapeHtml(chatUrl(t.chats[0]))}" data-jump="chat" data-id="${t.chats[0]}" aria-label="从任务 ${escapeHtml(t.title)} 打开关联会话">${icon('arrow', 'sm')}</a>` : ''}</div>`;
+        document.querySelector('#sp-surface').innerHTML =
+          `<div class="crumb">${icon('folder', 'sm')}<span>${escapeHtml(root.group)} / 主任务</span></div><div class="task-heading"><select class="root-switch" id="root-switch" aria-label="选择主任务">${roots()
+            .map(
+              (t) =>
+                `<option value="${t.id}" ${t.id === root.id ? 'selected' : ''}>${escapeHtml(t.title)}</option>`,
+            )
+            .join(
+              '',
+            )}</select><p>${escapeHtml(root.note)}</p><div class="task-metrics"><span class="pill blue">${root.done ? '主任务已完成' : '进行中'}</span><div class="progress" role="progressbar" aria-label="子任务完成进度" aria-valuenow="${done}" aria-valuemin="0" aria-valuemax="${childTasks.length || 1}"><i style="width:${childTasks.length ? (done / childTasks.length) * 100 : 0}%"></i></div><span class="small muted" id="sp-progress">${done}/${childTasks.length}</span></div></div><div class="row space"><button class="btn quiet compact" data-action="select-task" data-id="${root.id}">${icon('list', 'sm')}查看主任务详情</button><button class="btn compact" data-action="new-root">${icon('plus', 'sm')}主任务</button></div><div class="section-title"><h3>子任务</h3><button class="btn quiet compact" data-action="new-child">${icon('plus', 'sm')}添加</button></div><div id="task-list">${childTasks.length ? childTasks.map(taskRow).join('') : '<div class="empty">还没有子任务。从这里添加，或在右侧会话中拆解工作。</div>'}</div><section class="task-detail" aria-label="选中任务详情"><div class="row space"><span class="small muted">${selected.parentId ? '子任务详情' : '主任务详情'}</span><label class="row small muted"><input class="task-check" type="checkbox" aria-label="标记选中任务完成" data-complete="${selected.id}" ${selected.done ? 'checked' : ''}>${selected.done ? '已完成' : '完成'}</label></div><div class="detail-title" id="selected-task-title">${escapeHtml(selected.title)}</div>${selected.note ? `<p class="detail-note">${escapeHtml(selected.note)}</p>` : ''}<div class="section-title"><h3>关联的 ChatGPT 上下文</h3><button class="btn quiet compact" data-action="bind" data-id="${selected.id}">${icon('link', 'sm')}关联</button></div><div id="task-context">${(selected.parentId ? root.projects : selected.projects).map((id) => contextLink('project', id, !!selected.parentId)).join('')}${selected.chats.map((id) => contextLink('chat', id)).join('')}${!(selected.parentId ? root.projects : selected.projects).length && !selected.chats.length ? '<div class="empty">关联一个项目，让这件事有自己的讨论空间。</div>' : ''}</div>${selected.chats.length || (!selected.parentId && selected.projects.length) ? `<button class="btn quiet compact" style="margin-top:8px" data-action="unlink" data-id="${selected.id}">管理关联</button>` : ''}</section><div class="task-footer"><span>只保存在此浏览器</span><button class="btn quiet compact" data-action="copy-task" data-id="${selected.id}">${icon('copy', 'sm')}复制任务入口</button></div>`;
+      }
+      function rootSelector() {
+        const candidates = linkedRoots(ui.projectId);
+        return `<label class="target-label" for="chat-root">放到主任务</label><select class="target-select" id="chat-root" aria-label="选择 ChatGPT 操作的主任务"><option value="">${candidates.length ? '请选择明确的主任务' : '此项目尚未关联主任务'}</option>${candidates.map((t) => `<option value="${t.id}" ${ui.chatRootId === t.id ? 'selected' : ''}>${escapeHtml(t.title)}</option>`).join('')}</select>`;
+      }
+      function ensureDraft() {
+        if (ui.draft?.chatId === ui.chatId) return;
+        const c = getChat(ui.chatId);
+        ui.draft = {
+          id: uid(),
+          chatId: c.id,
+          items: c.draft.map((title, i) => ({
+            title,
+            minutes: i ? 60 : 30,
+            checked: true,
+          })),
+        };
+        saveUI();
+      }
+      function renderPlugin() {
+        const c = getChat(ui.chatId);
+        if (!c) return '';
+        const head = `<div class="plugin-head">${icon('link', 'sm')}Super Productivity<span>演示插件</span></div>`;
+        if (ui.card === 'draft') {
+          ensureDraft();
+          const applied = data.appliedDrafts[ui.draft.id];
+          if (applied)
+            return `<section class="plugin-card">${head}<div class="plugin-body"><div class="saved-mark">${icon('check')}已创建 ${applied.length} 条子任务</div><p class="small muted">每条任务都保留了这次会话的入口。</p>${applied
+              .map((id) => {
+                const t = getTask(id);
+                return t
+                  ? `<div class="plugin-task"><span>${escapeHtml(t.title)}</span><a href="${escapeHtml(taskUrl(id))}" data-jump="task" data-id="${id}">查看任务 ${icon('arrow', 'sm')}</a></div>`
+                  : '';
+              })
+              .join(
+                '',
+              )}<button class="btn quiet compact" data-action="new-draft" style="margin-top:10px">再创建一组子任务</button></div></section>`;
+          return `<section class="plugin-card">${head}<div class="plugin-body">${rootSelector()}<div class="section-title"><h3>待确认的子任务</h3><span class="small muted">估时 / 分钟</span></div>${ui.draft.items.map((item, i) => `<div class="draft-item"><input type="checkbox" aria-label="选择草稿 ${i + 1}" data-draft-check="${i}" ${item.checked ? 'checked' : ''}><input class="draft-title" aria-label="子任务标题 ${i + 1}" maxlength="160" data-draft-title="${i}" value="${escapeHtml(item.title)}"><input type="number" class="draft-time" aria-label="子任务估时 ${i + 1}" min="1" max="10080" data-draft-time="${i}" value="${item.minutes}"></div>`).join('')}<div class="draft-info">${icon('chat', 'sm')}将关联「${escapeHtml(c.title)}」。确认前不会创建任务。</div><div class="plugin-actions"><button class="btn chat-primary compact" data-action="apply-draft" ${ui.chatRootId ? '' : 'disabled'}>${icon('plus', 'sm')}确认创建子任务</button><button class="btn quiet compact" data-action="existing">关联已有任务</button></div></div></section>`;
+        }
+        const candidates = linkedRoots(ui.projectId);
+        const root = candidates.find((t) => t.id === ui.chatRootId);
+        const tasks = root ? [root, ...children(root.id)] : [];
+        return `<section class="plugin-card">${head}<div class="plugin-body">${rootSelector()}${root ? `<div class="section-title"><h3>关联任务与进度</h3><a class="small" href="${escapeHtml(taskUrl(root.id))}" data-jump="task" data-id="${root.id}" style="color:var(--blue);text-decoration:none">打开任务端</a></div>${tasks.map((t) => `<div class="plugin-task"><input class="task-check" type="checkbox" aria-label="在 ChatGPT 更新任务：${escapeHtml(t.title)}" data-chat-complete="${t.id}" ${t.done ? 'checked' : ''}><span>${escapeHtml(t.title)}</span><a href="${escapeHtml(taskUrl(t.id))}" data-jump="task" data-id="${t.id}" aria-label="查看任务：${escapeHtml(t.title)}">${icon('arrow', 'sm')}</a></div>`).join('')}` : '<p class="notice">同一个项目可能有多条主任务。请选择本次操作的目标，避免写入其他工作。</p>'}</div></section>`;
+      }
+      function renderChat() {
+        const project = getProject(ui.projectId);
+        const chat = getChat(ui.chatId);
+        document.querySelector('#chat-sidebar').innerHTML =
+          `<div class="caption">项目</div>${projects.map((p) => `<button class="nav-item ${ui.projectId === p.id ? 'active' : ''}" data-action="project" data-id="${p.id}">${icon('folder', 'sm')}<span>${escapeHtml(p.title)}</span></button>`).join('')}<div class="caption">项目中的会话</div>${conversations
+            .filter((c) => c.projectId === project.id)
+            .map(
+              (c) =>
+                `<button class="nav-item ${ui.chatId === c.id ? 'active' : ''}" data-action="conversation" data-id="${c.id}">${icon('chat', 'sm')}<span>${escapeHtml(c.title)}</span></button>`,
+            )
+            .join(
+              '',
+            )}<div class="sidebar-bottom"><span class="mini-avatar">我</span>我的项目<br>会话内容为演示样例</div>`;
+        const crumb = `<div class="crumb"><button data-action="project" data-id="${project.id}">${icon('folder', 'sm')} ${escapeHtml(project.title)}</button>${chat ? `${icon('chevron', 'sm')}<span>当前会话</span>` : ''}</div>`;
+        if (!chat) {
+          const bound = linkedRoots(project.id);
+          document.querySelector('#chat-surface').innerHTML =
+            `${crumb}<div class="chat-top"><h2 id="chat-heading" tabindex="-1">${escapeHtml(project.title)}</h2><p class="small muted">ChatGPT 项目</p></div><div class="project-summary"><h3>这件事的上下文，都在这里。</h3><p class="small muted" style="margin-top:7px">${escapeHtml(project.description)}</p></div><div class="section-title"><h3>关联的主任务</h3><button class="btn quiet compact" data-action="bind-root-from-chat">${icon('link', 'sm')}关联任务</button></div>${bound.length ? bound.map((t) => `<a class="project-task-link" href="${escapeHtml(taskUrl(t.id))}" data-jump="task" data-id="${t.id}"><span class="context-icon">${icon('list')}</span><span class="context-text"><strong>${escapeHtml(t.title)}</strong><small>${children(t.id).filter((s) => s.done).length}/${children(t.id).length} 子任务完成</small></span>${icon('arrow', 'sm')}</a>`).join('') : '<div class="empty">这个项目还没有关联主任务。可以选择已有任务建立关联。</div>'}<div class="section-title" style="margin-top:26px"><h3>继续讨论</h3><span class="small muted">${conversations.filter((c) => c.projectId === project.id).length} 次会话</span></div>${conversations
+              .filter((c) => c.projectId === project.id)
+              .map(
+                (c) =>
+                  `<button class="conversation-card" data-action="conversation" data-id="${c.id}"><strong>${escapeHtml(c.title)} ${icon('arrow', 'sm')}</strong><small>${escapeHtml(c.summary)}</small></button>`,
+              )
+              .join(
+                '',
+              )}<div class="notice" style="margin-top:auto">主任务对应项目，会话可以按需关联子任务。无需把每次讨论都变成待办。</div>`;
+          return;
+        }
+        document.querySelector('#chat-surface').innerHTML =
+          `${crumb}<div class="chat-top"><h2 id="chat-heading" tabindex="-1">${escapeHtml(chat.title)}</h2><p class="small muted">项目会话 · 演示内容</p></div><div class="chat-stream"><div class="user-message" id="last-prompt">${escapeHtml(ui.lastPrompt?.chatId === chat.id ? ui.lastPrompt.text : chat.user)}</div><div class="assistant-title">${icon('spark')}ChatGPT</div><p class="assistant-text">${escapeHtml(ui.response || chat.answer)}</p>${renderPlugin()}<div class="quick-actions"><button class="btn" data-action="tasks">${icon('list', 'sm')}查看关联任务</button><button class="btn" data-action="new-draft">${icon('plus', 'sm')}拆成子任务</button><button class="btn" data-action="existing">${icon('link', 'sm')}关联已有任务</button></div></div><form class="composer" id="composer"><div class="composer-box"><textarea id="prompt" aria-label="输入演示指令" placeholder="试试：查看关联任务，或输入待办清单…" rows="2" maxlength="2000"></textarea><button class="btn chat-primary icon-btn" type="submit" aria-label="发送演示指令">${icon('send')}</button></div><p class="composer-note">本地交互演示，不调用语言模型</p></form>`;
+      }
+      function render() {
+        ensureUI();
+        document.body.dataset.view = ui.view;
+        document
+          .querySelectorAll('.segmented button')
+          .forEach((b) =>
+            b.setAttribute('aria-pressed', String(b.dataset.view === ui.view)),
+          );
+        renderSP();
+        renderChat();
+        saveUI();
+        document.querySelector('#sp-window').href = taskUrl(ui.taskId);
+        document.querySelector('#chat-window').href = ui.chatId
+          ? chatUrl(ui.chatId)
+          : projectUrl(ui.projectId);
+        document.querySelector('#save-status').textContent = storageAvailable
+          ? '演示数据保存在此浏览器'
+          : '浏览器不允许保存，当前改动仅在本页有效';
+        document
+          .querySelectorAll('[data-icon]')
+          .forEach((el) => (el.innerHTML = icon(el.dataset.icon)));
+      }
+      const modal = document.querySelector('#modal');
+      let modalAction = null;
+      // 关闭时同步恢复真实状态，避免排队的 close 事件影响下一次操作。
+      function closeModal() {
+        modal.close();
+        modalAction = null;
+        render();
+      }
+      modal.addEventListener('cancel', (event) => {
+        event.preventDefault();
+        closeModal();
+      });
+      function openModal(title, body, confirm = '保存关联', action = null) {
+        modalAction = action;
+        modal.innerHTML = `<form id="dialog-form"><div class="dialog-head"><h2 id="dialog-title">${escapeHtml(title)}</h2><button class="btn quiet icon-btn" type="button" data-action="close-modal" aria-label="关闭对话框">${icon('close')}</button></div><div class="dialog-body">${body}<div class="field-error" id="dialog-error" role="alert"></div></div><div class="dialog-foot"><button class="btn quiet" type="button" data-action="close-modal">${action ? '取消' : '关闭'}</button>${action ? `<button class="btn primary" type="submit">${escapeHtml(confirm)}</button>` : ''}</div></form>`;
+        modal.showModal();
+      }
+      function selectedForm(name) {
+        return new FormData(document.querySelector('#dialog-form')).get(name);
+      }
+      function showGuide() {
+        openModal(
+          '体验一次完整的双边协作',
+          [
+            ['从任务进入项目', '在左侧点击关联的 ChatGPT 项目，右侧会打开项目首页。'],
+            ['从子任务进入会话', '点击子任务旁的箭头，进入这项工作对应的讨论。'],
+            [
+              '从会话创建子任务',
+              '选择明确的主任务，编辑两条草稿，点击“确认创建子任务”。',
+            ],
+            [
+              '带着上下文回到任务',
+              '点击“查看任务”定位到新子任务；也可打开两个独立窗口，体验两边状态同步。',
+            ],
+          ]
+            .map(
+              (s, i) =>
+                `<div class="guide-step"><span class="number">${i + 1}</span><div><h3>${s[0]}</h3><p>${s[1]}</p></div></div>`,
+            )
+            .join('') +
+            '<p class="notice">示例内容是虚构数据。所有写入与跳转都在这个原型内，不会改动真实账号。</p>',
+        );
+      }
+      let bindingTaskId = null;
+      function bindTask(id, forceKind) {
+        bindingTaskId = id;
+        const task = getTask(id);
+        const kind = forceKind || (task.parentId ? 'chat' : 'project');
+        openModal(
+          kind === 'project' ? '关联 ChatGPT 项目' : '关联 ChatGPT 会话',
+          `<p class="small muted">关联到「${escapeHtml(task.title)}」</p><label class="field"><span>关联类型</span><select name="kind" id="bind-kind"><option value="project" ${kind === 'project' ? 'selected' : ''}>ChatGPT 项目</option><option value="chat" ${kind === 'chat' ? 'selected' : ''}>ChatGPT 会话</option></select></label><div id="bind-options">${bindOptions(kind, task)}</div><p class="notice">这里只选择演示资源。已有相同关联会保留，追加关联不会覆盖其他链接。</p>`,
+          '保存关联',
+          () => {
+            const k = selectedForm('kind');
+            const target = selectedForm('target');
+            if (!target) throw Error('请选择要关联的项目或会话。');
+            if (k === 'project' && task.parentId)
+              throw Error('项目背景由主任务继承。请到主任务绑定项目，或在这里关联会话。');
+            const already = (
+              k === 'project' ? getTask(id).projects : getTask(id).chats
+            ).includes(target);
+            updateData(
+              (d) => {
+                const t = d.tasks.find((t) => t.id === id);
+                const list = k === 'project' ? t.projects : t.chats;
+                if (!list.includes(target)) list.push(target);
+              },
+              already ? '已有关联，未重复添加' : '关联已保存',
+            );
+            closeModal();
+          },
+        );
+      }
+      function bindOptions(kind, task) {
+        return (kind === 'project' ? projects : conversations)
+          .map(
+            (obj) =>
+              `<label class="choice"><input type="radio" name="target" value="${obj.id}" ${(kind === 'project' ? task.projects : task.chats).includes(obj.id) ? 'checked' : ''}><span><strong>${escapeHtml(obj.title)}</strong><small>${kind === 'project' ? 'ChatGPT 项目' : escapeHtml(getProject(obj.projectId).title) + ' / 会话'}${(kind === 'project' ? task.projects : task.chats).includes(obj.id) ? ' · 已关联' : ''}</small></span></label>`,
+          )
+          .join('');
+      }
+      function bindRootFromChat() {
+        openModal(
+          '把项目关联到主任务',
+          `<p class="small muted">当前项目：${escapeHtml(getProject(ui.projectId).title)}</p>${roots()
+            .map(
+              (t) =>
+                `<label class="choice"><input type="radio" name="root" value="${t.id}"><span><strong>${escapeHtml(t.title)}</strong><small>${escapeHtml(t.group)}${t.projects.includes(ui.projectId) ? ' · 已关联此项目' : ''}</small></span></label>`,
+            )
+            .join('')}`,
+          '保存关联',
+          () => {
+            const id = selectedForm('root');
+            if (!id) throw Error('请选择一条主任务。');
+            updateData((d) => {
+              const t = d.tasks.find((t) => t.id === id);
+              if (!t.projects.includes(ui.projectId)) t.projects.push(ui.projectId);
+            }, '项目与主任务已关联');
+            ui.chatRootId = id;
+            render();
+            closeModal();
+          },
+        );
+      }
+      function manageLinks(id) {
+        const task = getTask(id);
+        const links = [
+          ...task.projects.map((x) => ({
+            kind: 'project',
+            id: x,
+            title: getProject(x)?.title,
+          })),
+          ...task.chats.map((x) => ({ kind: 'chat', id: x, title: getChat(x)?.title })),
+        ];
+        openModal(
+          '管理关联',
+          `<p class="small muted">选择要解除的关联。任务、项目和会话都会保留。</p>${links.map((l) => `<label class="choice"><input type="checkbox" name="remove" value="${l.kind}:${l.id}"><span><strong>${escapeHtml(l.title)}</strong><small>${l.kind === 'project' ? '项目' : '会话'}</small></span></label>`).join('')}`,
+          '解除选中关联',
+          () => {
+            const selected = new FormData(document.querySelector('#dialog-form')).getAll(
+              'remove',
+            );
+            if (!selected.length) throw Error('请选择至少一条关联。');
+            updateData((d) => {
+              const t = d.tasks.find((t) => t.id === id);
+              selected.forEach((value) => {
+                const [k, target] = value.split(':');
+                const field = k === 'project' ? 'projects' : 'chats';
+                t[field] = t[field].filter((x) => x !== target);
+              });
+            }, '已解除选中关联，任务和对话仍保留');
+            closeModal();
+          },
+        );
+      }
+      function existingTask() {
+        const candidates = linkedRoots(ui.projectId);
+        openModal(
+          '把当前会话关联到已有任务',
+          `<p class="small muted">会话：${escapeHtml(getChat(ui.chatId).title)}</p>${
+            candidates
+              .flatMap((t) => [t, ...children(t.id)])
+              .map(
+                (t) =>
+                  `<label class="choice"><input type="radio" name="task" value="${t.id}"><span><strong>${escapeHtml(t.title)}</strong><small>${t.parentId ? '子任务 / ' + escapeHtml(getTask(t.parentId).title) : '主任务'}${t.chats.includes(ui.chatId) ? ' · 已关联当前会话' : ''}</small></span></label>`,
+              )
+              .join('') || '<p class="notice">请先在项目首页关联一条主任务。</p>'
+          }`,
+          '保存关联',
+          () => {
+            const id = selectedForm('task');
+            if (!id) throw Error('请选择已有任务。');
+            const already = getTask(id).chats.includes(ui.chatId);
+            updateData(
+              (d) => {
+                const t = d.tasks.find((t) => t.id === id);
+                if (!t.chats.includes(ui.chatId)) t.chats.push(ui.chatId);
+              },
+              already ? '此会话已关联，未重复添加' : '会话已关联到已有任务',
+            );
+            closeModal();
+          },
+        );
+      }
+      function newTask(isRoot = false) {
+        const root = currentRoot();
+        openModal(
+          isRoot ? '新建主任务' : '添加子任务',
+          `<label class="field"><span>任务名称</span><input name="title" maxlength="160" required placeholder="这件事需要做什么？"></label>${isRoot ? '<label class="field"><span>所属项目</span><select name="group"><option>工作</option><option>个人</option></select></label>' : `<p class="notice">将添加到「${escapeHtml(root.title)}」下面。后续可以单独关联会话。</p>`}`,
+          '创建任务',
+          () => {
+            const title = String(selectedForm('title') || '').trim();
+            if (!title) throw Error('请输入任务名称。');
+            const task = {
+              id: uid(),
+              title,
+              parentId: isRoot ? null : root.id,
+              done: false,
+              projects: [],
+              chats: [],
+              note: '',
+              ...(isRoot ? { group: selectedForm('group') } : {}),
+            };
+            ui.taskId = task.id;
+            if (isRoot) {
+              ui.rootId = task.id;
+              ui.nav = task.group;
+            }
+            updateData(
+              (d) => d.tasks.push(task),
+              isRoot ? '主任务已创建' : '子任务已创建',
+            );
+            closeModal();
+          },
+        );
+      }
+      function completeTask(id, done, fromChat = false) {
+        const task = getTask(id);
+        if (!task) return;
+        const execute = () =>
+          updateData(
+            (d) => {
+              const t = d.tasks.find((t) => t.id === id);
+              if (t) t.done = done;
+            },
+            `${task.title}：${done ? '已完成' : '已恢复为待办'}`,
+          );
+        if (!fromChat) {
+          execute();
+          return;
+        }
+        // 对话端明确预览写入目标，演示插件不会根据讨论结束自动完成任务。
+        openModal(
+          '确认更新任务状态',
+          `<p style="line-height:1.9">将「<strong>${escapeHtml(task.title)}</strong>」${done ? '标记为完成' : '恢复为待办'}。</p><p class="notice">只更新这一条任务。其他任务与会话不受影响。</p>`,
+          done ? '标记完成' : '恢复为待办',
+          () => {
+            execute();
+            closeModal();
+          },
+        );
+      }
+      function applyDraft() {
+        const draft = ui.draft;
+        if (!draft) return;
+        if (data.appliedDrafts[draft.id]) {
+          toast('这组子任务已经创建，不会重复添加');
+          render();
+          return;
+        }
+        const root = getTask(ui.chatRootId);
+        if (!root || !root.projects.includes(ui.projectId)) {
+          toast('请先选择当前项目下的主任务');
+          return;
+        }
+        if (root.done) {
+          toast('主任务已经完成，请先恢复为待办或选择其他主任务');
+          return;
+        }
+        const picked = draft.items.filter((t) => t.checked);
+        if (!picked.length) {
+          toast('请至少选择一条子任务');
+          return;
+        }
+        if (
+          picked.some(
+            (t) =>
+              !t.title.trim() ||
+              !Number.isInteger(Number(t.minutes)) ||
+              t.minutes < 1 ||
+              t.minutes > 10080,
+          )
+        ) {
+          toast('请填写任务标题，估时为 1～10080 的整数分钟');
+          return;
+        }
+        const ids = picked.map(() => uid());
+        updateData((d) => {
+          if (d.appliedDrafts[draft.id]) return;
+          const parent = d.tasks.find((t) => t.id === root.id);
+          if (!parent || parent.done) throw Error('主任务状态已经变化，请重新选择。');
+          picked.forEach((item, i) =>
+            d.tasks.push({
+              id: ids[i],
+              title: item.title.trim(),
+              parentId: root.id,
+              done: false,
+              projects: [],
+              chats: [ui.chatId],
+              minutes: Number(item.minutes),
+              note: '',
+            }),
+          );
+          d.appliedDrafts[draft.id] = ids;
+        }, `已创建 ${picked.length} 条子任务，并关联当前会话`);
+      }
+      function freshDraft(titles) {
+        ui.draft = {
+          id: uid(),
+          chatId: ui.chatId,
+          items: (titles || getChat(ui.chatId).draft)
+            .slice(0, 10)
+            .map((title, i) => ({ title, minutes: i ? 60 : 30, checked: true })),
+        };
+        ui.card = 'draft';
+        ui.response = '先核对目标主任务和子任务内容，确认后再创建。';
+        render();
+      }
+      function sendPrompt(text) {
+        text = text.trim();
+        if (!text) return;
+        ui.lastPrompt = { chatId: ui.chatId, text };
+        if (/查看|进度|哪些任务|任务列表/.test(text)) {
+          ui.card = 'tasks';
+          ui.response =
+            '下面是选定主任务的当前进度。可以打开具体任务，或明确更新它的状态。';
+          render();
+          return;
+        }
+        if (/完成|恢复|待办/.test(text) && !/[\n；;]/.test(text)) {
+          ui.card = 'tasks';
+          ui.response = '请在任务列表中选择要更新的确切任务，再确认状态变更。';
+          render();
+          return;
+        }
+        if (/关联.*已有/.test(text)) {
+          existingTask();
+          return;
+        }
+        const titles = text
+          .split(/[\n；;]/)
+          .map((t) => t.replace(/^\s*(?:[-*•]|\d+[.、)])\s*/, '').trim())
+          .filter(Boolean);
+        if (titles.length > 1) {
+          freshDraft(titles);
+          return;
+        }
+        if (/拆|子任务|整理|创建|任务/.test(text)) {
+          freshDraft();
+          return;
+        }
+        ui.response =
+          '这是本地演示。可以用“查看关联任务”，或每行输入一项待办来生成可编辑草稿；也可以使用下面的快捷操作。';
+        render();
+      }
+      async function copyEntry(id) {
+        const url = taskUrl(id);
+        try {
+          if (!navigator.clipboard) throw Error();
+          await navigator.clipboard.writeText(url);
+          toast('已复制演示任务入口，可在另一个标签页打开');
+        } catch {
+          openModal(
+            '复制任务入口',
+            `<label class="field"><span>复制此演示地址</span><input value="${escapeHtml(url)}" readonly onclick="this.select()"></label><p class="notice">这是本地原型地址，不是真实 Super Productivity 深链接。</p>`,
+          );
+        }
+      }
+      document.addEventListener('click', (event) => {
+        const view = event.target.closest('.segmented button');
+        if (view) {
+          ui.view = view.dataset.view;
+          const url = new URL(location.href);
+          url.searchParams.set('surface', ui.view);
+          history.pushState({}, '', url);
+          render();
+          return;
+        }
+        const jump = event.target.closest('[data-jump]');
+        if (jump) {
+          if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+          event.preventDefault();
+          const { jump: kind, id } = jump.dataset;
+          if (kind === 'task') jumpTask(id);
+          else if (kind === 'project') jumpProject(id);
+          else jumpChat(id);
+          return;
+        }
+        const button = event.target.closest('[data-action]');
+        if (!button) return;
+        const { action, id } = button.dataset;
+        if (action === 'guide') showGuide();
+        else if (action === 'close-modal') closeModal();
+        else if (action === 'reset')
+          openModal(
+            '重置演示数据',
+            `<p style="line-height:1.9">清除在此原型中新增的任务、关联和进度，恢复初始示例。</p><p class="notice">只影响这个浏览器里的演示数据，不会操作真实账号。</p>`,
+            '重置演示',
+            () => {
+              data = initialData();
+              try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+              } catch {}
+              ui = {
+                rootId: 't1',
+                taskId: 't3',
+                projectId: 'p1',
+                chatId: 'c2',
+                view: ui.view,
+                card: 'draft',
+                draft: null,
+                nav: '工作',
+                chatRootId: 't1',
+              };
+              history.replaceState({}, '', location.pathname + location.search);
+              render();
+              closeModal();
+              toast('已恢复初始演示数据');
+            },
+          );
+        else if (action === 'filter') {
+          ui.nav = button.dataset.filter;
+          const available = roots().filter(
+            (t) => ui.nav === '全部' || t.group === ui.nav,
+          );
+          if (!available.some((t) => t.id === ui.rootId)) {
+            ui.rootId = available[0].id;
+            ui.taskId = ui.rootId;
+          }
+          render();
+        } else if (action === 'select-root') jumpTask(id);
+        else if (action === 'select-task') jumpTask(id);
+        else if (action === 'project') {
+          ui.response = null;
+          jumpProject(id);
+        } else if (action === 'conversation') {
+          ui.response = null;
+          jumpChat(id);
+        } else if (action === 'bind') bindTask(id);
+        else if (action === 'unlink') manageLinks(id);
+        else if (action === 'bind-root-from-chat') bindRootFromChat();
+        else if (action === 'new-root') newTask(true);
+        else if (action === 'new-child') newTask();
+        else if (action === 'existing') existingTask();
+        else if (action === 'apply-draft') applyDraft();
+        else if (action === 'new-draft') freshDraft();
+        else if (action === 'tasks') {
+          ui.card = 'tasks';
+          ui.response = '这是当前主任务的进度。任务端的变更也会在这里体现。';
+          render();
+        } else if (action === 'copy-task') copyEntry(id);
+      });
+      document.addEventListener('change', (event) => {
+        const el = event.target;
+        if (el.dataset.complete) completeTask(el.dataset.complete, el.checked);
+        else if (el.dataset.chatComplete)
+          completeTask(el.dataset.chatComplete, el.checked, true);
+        else if (el.id === 'root-switch') jumpTask(el.value);
+        else if (el.id === 'chat-root') {
+          ui.chatRootId = el.value;
+          render();
+        } else if (el.id === 'bind-kind')
+          document.querySelector('#bind-options').innerHTML = bindOptions(
+            el.value,
+            getTask(bindingTaskId),
+          );
+        else if (el.dataset.draftCheck !== undefined) {
+          ui.draft.items[+el.dataset.draftCheck].checked = el.checked;
+          saveUI();
+        }
+      });
+      document.addEventListener('input', (event) => {
+        const el = event.target;
+        if (el.dataset.draftTitle !== undefined) {
+          ui.draft.items[+el.dataset.draftTitle].title = el.value;
+          saveUI();
+        }
+        if (el.dataset.draftTime !== undefined) {
+          ui.draft.items[+el.dataset.draftTime].minutes = Number(el.value);
+          saveUI();
+        }
+      });
+      document.addEventListener('submit', (event) => {
+        if (event.target.id === 'dialog-form') {
+          event.preventDefault();
+          try {
+            modalAction?.();
+          } catch (error) {
+            document.querySelector('#dialog-error').textContent = error.message;
+          }
+          return;
+        }
+        if (event.target.id === 'composer') {
+          event.preventDefault();
+          sendPrompt(document.querySelector('#prompt').value);
+        }
+      });
+      document.addEventListener('keydown', (event) => {
+        if (
+          event.target.id === 'prompt' &&
+          event.key === 'Enter' &&
+          !event.shiftKey &&
+          !event.isComposing
+        ) {
+          event.preventDefault();
+          sendPrompt(event.target.value);
+        }
+      });
+      window.addEventListener('popstate', useRoute);
+      window.addEventListener('hashchange', useRoute);
+      window.addEventListener('storage', (event) => {
+        if (event.key === STORAGE_KEY) {
+          data = readData();
+          render();
+          toast('已收到另一窗口的演示更新');
+        }
+      });
+      useRoute();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "chatgpt-task-links-demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "任务与 ChatGPT 项目关联的独立双边交互原型",
+  "scripts": {
+    "quiet": "node ../../../tools/quiet.js",
+    "start": "node serve.cjs",
+    "test": "playwright test --config=playwright.config.cjs",
+    "format": "prettier --write index.html *.cjs *.md package.json",
+    "format:check": "prettier --check index.html *.cjs *.md package.json"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.59.1",
+    "prettier": "3.8.3"
+  }
+}
