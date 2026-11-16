@@ -35,6 +35,10 @@ const RELEASE_TAG_PATTERN = /^v\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/;
 const SHA1_PATTERN = /^(?!0{40}$)[0-9a-f]{40}$/;
 const ALL_ZERO_SHA1 = '0'.repeat(40);
 
+// Windows 上真实 Git 子进程及全局 hooks 的启动成本可超过默认 5 秒；
+// 仅放宽这两个临时仓库集成场景的时限，保留其他测试的默认限制与全部断言。
+const GIT_FIXTURE_TIMEOUT = process.platform === 'win32' ? 30_000 : 5_000;
+
 const GIT_LOCAL_ENVIRONMENT_VARIABLES = execFileSync(
   'git',
   ['rev-parse', '--local-env-vars'],
@@ -220,43 +224,53 @@ describe('released-client compatibility policy', () => {
     }
   });
 
-  it('accepts a tag, commit, source path, and blob from one real Git provenance chain', () => {
-    withTestGitRepository((repositoryRoot, cohort) => {
-      expect(validateReleasedOracleProvenance(cohort, repositoryRoot)).toEqual([]);
-    });
-  });
+  it(
+    'accepts a tag, commit, source path, and blob from one real Git provenance chain',
+    () => {
+      withTestGitRepository((repositoryRoot, cohort) => {
+        expect(validateReleasedOracleProvenance(cohort, repositoryRoot)).toEqual([]);
+      });
+    },
+    GIT_FIXTURE_TIMEOUT,
+  );
 
-  it('rejects fake and all-zero release provenance pins', () => {
-    withTestGitRepository((repositoryRoot, cohort) => {
-      const tamperedPins: readonly [ReleasedOracleEvidence['cohorts'][number], string][] =
-        [
+  it(
+    'rejects fake and all-zero release provenance pins',
+    () => {
+      withTestGitRepository((repositoryRoot, cohort) => {
+        const tamperedPins: readonly [
+          ReleasedOracleEvidence['cohorts'][number],
+          string,
+        ][] = [
           [{ ...cohort, releaseTag: 'v9.9.9' }, 'release tag'],
           [{ ...cohort, commitSha: '1'.repeat(40) }, 'commit'],
           [{ ...cohort, sourceBlobSha: '2'.repeat(40) }, 'source blob'],
         ];
 
-      for (const [pins, expectedError] of tamperedPins) {
-        expect(validateReleasedOracleProvenance(pins, repositoryRoot)).toEqual(
-          expect.arrayContaining([expect.stringContaining(expectedError)]),
-        );
-      }
+        for (const [pins, expectedError] of tamperedPins) {
+          expect(validateReleasedOracleProvenance(pins, repositoryRoot)).toEqual(
+            expect.arrayContaining([expect.stringContaining(expectedError)]),
+          );
+        }
 
-      const allZeroErrors = validateReleasedOracleProvenance(
-        {
-          ...cohort,
-          commitSha: ALL_ZERO_SHA1,
-          sourceBlobSha: ALL_ZERO_SHA1,
-        },
-        repositoryRoot,
-      );
-      expect(allZeroErrors).toEqual(
-        expect.arrayContaining([
-          expect.stringContaining('commit'),
-          expect.stringContaining('source blob'),
-        ]),
-      );
-    });
-  });
+        const allZeroErrors = validateReleasedOracleProvenance(
+          {
+            ...cohort,
+            commitSha: ALL_ZERO_SHA1,
+            sourceBlobSha: ALL_ZERO_SHA1,
+          },
+          repositoryRoot,
+        );
+        expect(allZeroErrors).toEqual(
+          expect.arrayContaining([
+            expect.stringContaining('commit'),
+            expect.stringContaining('source blob'),
+          ]),
+        );
+      });
+    },
+    GIT_FIXTURE_TIMEOUT,
+  );
 
   it('requires an explicit assessment for every schema after the audited baseline', () => {
     expect(validateMigrationRegistry()).toEqual([]);
