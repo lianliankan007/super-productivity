@@ -56,4 +56,6 @@ npm --prefix docs/prototypes/chatgpt-task-links run quiet -- format:native:check
 
 2026-11-16：完整前端构建与原有插件构建通过，三个集成场景通过；预览图来自实际页面。测试截图与 trace 位于仓库 `.tmp/native-demo-test-results/`，不提交生成的应用构建和浏览器数据。
 
+推送前另通过 `packages:test`（sync-core 293、shared-schema 95、sync-providers 476，共 864 个测试）及 shared-schema 构建。本机 Windows 的两个真实 Git 临时仓库测试曾因启动子进程和全局 hooks 超过默认 5 秒而超时，已仅对这两个场景设置 Windows 30 秒时限，保留全部断言；该包按仓库规则使用自身构建与测试验证，不把 root ESLint 的忽略结果当作通过。
+
 真实 ChatGPT 与本机 MCP 桥接后续按[产品方案](../../../plans/2026-11-16-chatgpt-task-links-product.md)和[技术方案](../../../plans/2026-11-16-chatgpt-task-links-technical.md)实施。
