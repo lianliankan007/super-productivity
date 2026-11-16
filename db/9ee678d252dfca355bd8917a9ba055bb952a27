@@ -1,0 +1,22 @@
+docs/plans/2026-11-16-chatgpt-task-links-product.md
+  s_8c494f3b3fd9a0::t_072d0952c5c401 1-171
+docs/plans/2026-11-16-chatgpt-task-links-technical.md
+  s_8c494f3b3fd9a0::t_072d0952c5c401 1-102,104-106,120-215,217-262
+  s_8c494f3b3fd9a0::t_eb7ebbd7da6dc5 103,107-119,216,263-264
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "db9ee678d252dfca355bd8917a9ba055bb952a27",
+  "prompts": {},
+  "sessions": {
+    "s_8c494f3b3fd9a0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1e270-7469-74a2-9e12-ca66037c396e",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "eddie.pan2 <eddie.pan2@jtexpress.com>"
+    }
+  }
+}
